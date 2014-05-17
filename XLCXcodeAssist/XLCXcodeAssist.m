@@ -116,9 +116,11 @@
                             }
                             
                             NSString *returnStatement;
-                            if ([returnType isEqualToString:@"void"]) {
+                            NSString *realReturnType = [returnType stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"()"]];
+                            
+                            if ([realReturnType isEqualToString:@"void"]) {
                                 returnStatement = @"";
-                            } else if ([returnType hasSuffix:@"*"] || [returnType isEqualToString:@"id"]) {
+                            } else if ([realReturnType hasSuffix:@"*"] || [realReturnType isEqualToString:@"id"]) {
                                 returnStatement = @"return <#nil#>;";
                             } else {
                                 returnStatement = [NSString stringWithFormat:@"return <#%@#>;", returnType];
