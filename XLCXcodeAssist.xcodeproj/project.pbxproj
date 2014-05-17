@@ -7,28 +7,38 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		067EFA431920D73200C1B75C /* IDEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA421920D73200C1B75C /* IDEKit.framework */; };
+		067EFA451920D73500C1B75C /* IDEFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA441920D73500C1B75C /* IDEFoundation.framework */; };
+		067EFA471920D73B00C1B75C /* DVTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA461920D73B00C1B75C /* DVTKit.framework */; };
+		067EFA491920D73D00C1B75C /* DVTFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA481920D73D00C1B75C /* DVTFoundation.framework */; };
+		067EFA5F1920EE0B00C1B75C /* XLCProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 067EFA5D1920EE0B00C1B75C /* XLCProxy.m */; };
 		06FCB3391920B7A80057845B /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB3381920B7A80057845B /* QuickLook.framework */; };
 		06FCB33B1920B7A80057845B /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33A1920B7A80057845B /* ApplicationServices.framework */; };
 		06FCB33D1920B7A80057845B /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33C1920B7A80057845B /* CoreServices.framework */; };
 		06FCB33F1920B7A80057845B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33E1920B7A80057845B /* CoreFoundation.framework */; };
 		06FCB3451920B7A80057845B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 06FCB3431920B7A80057845B /* InfoPlist.strings */; };
-		06FCB3471920B7A80057845B /* GenerateThumbnailForURL.c in Sources */ = {isa = PBXBuildFile; fileRef = 06FCB3461920B7A80057845B /* GenerateThumbnailForURL.c */; };
-		06FCB3491920B7A80057845B /* GeneratePreviewForURL.c in Sources */ = {isa = PBXBuildFile; fileRef = 06FCB3481920B7A80057845B /* GeneratePreviewForURL.c */; };
-		06FCB34B1920B7A80057845B /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 06FCB34A1920B7A80057845B /* main.c */; };
+		06FCB3541920B7CC0057845B /* XLCXcodeAssist.h in Headers */ = {isa = PBXBuildFile; fileRef = 06FCB3521920B7CC0057845B /* XLCXcodeAssist.h */; };
+		06FCB3551920B7CC0057845B /* XLCXcodeAssist.m in Sources */ = {isa = PBXBuildFile; fileRef = 06FCB3531920B7CC0057845B /* XLCXcodeAssist.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		06FCB3351920B7A80057845B /* XLCXcodeAssist.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XLCXcodeAssist.qlgenerator; sourceTree = BUILT_PRODUCTS_DIR; };
+		067EFA421920D73200C1B75C /* IDEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IDEKit.framework; path = ../../../../../Applications/Xcode.app/Contents/Frameworks/IDEKit.framework; sourceTree = "<group>"; };
+		067EFA441920D73500C1B75C /* IDEFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IDEFoundation.framework; path = ../../../../../Applications/Xcode.app/Contents/Frameworks/IDEFoundation.framework; sourceTree = "<group>"; };
+		067EFA461920D73B00C1B75C /* DVTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DVTKit.framework; path = ../../../../../Applications/Xcode.app/Contents/SharedFrameworks/DVTKit.framework; sourceTree = "<group>"; };
+		067EFA481920D73D00C1B75C /* DVTFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DVTFoundation.framework; path = ../../../../../Applications/Xcode.app/Contents/SharedFrameworks/DVTFoundation.framework; sourceTree = "<group>"; };
+		067EFA5A1920DFAC00C1B75C /* IDESourceEditor.ideplugin */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = IDESourceEditor.ideplugin; path = ../../../../../Applications/Xcode.app/Contents/PlugIns/IDESourceEditor.ideplugin; sourceTree = "<group>"; };
+		067EFA5D1920EE0B00C1B75C /* XLCProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XLCProxy.m; sourceTree = "<group>"; };
+		069FFD2F19273B12002821F7 /* XcodeHeaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XcodeHeaders.h; sourceTree = "<group>"; };
+		06FCB3351920B7A80057845B /* XLCXcodeAssist.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XLCXcodeAssist.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		06FCB3381920B7A80057845B /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
 		06FCB33A1920B7A80057845B /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		06FCB33C1920B7A80057845B /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		06FCB33E1920B7A80057845B /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		06FCB3421920B7A80057845B /* XLCXcodeAssist-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "XLCXcodeAssist-Info.plist"; sourceTree = "<group>"; };
 		06FCB3441920B7A80057845B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		06FCB3461920B7A80057845B /* GenerateThumbnailForURL.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = GenerateThumbnailForURL.c; sourceTree = "<group>"; };
-		06FCB3481920B7A80057845B /* GeneratePreviewForURL.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = GeneratePreviewForURL.c; sourceTree = "<group>"; };
-		06FCB34A1920B7A80057845B /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		06FCB34C1920B7A80057845B /* XLCXcodeAssist-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XLCXcodeAssist-Prefix.pch"; sourceTree = "<group>"; };
+		06FCB3521920B7CC0057845B /* XLCXcodeAssist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XLCXcodeAssist.h; sourceTree = "<group>"; };
+		06FCB3531920B7CC0057845B /* XLCXcodeAssist.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XLCXcodeAssist.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,7 +46,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				067EFA451920D73500C1B75C /* IDEFoundation.framework in Frameworks */,
+				067EFA471920D73B00C1B75C /* DVTKit.framework in Frameworks */,
+				067EFA491920D73D00C1B75C /* DVTFoundation.framework in Frameworks */,
 				06FCB33F1920B7A80057845B /* CoreFoundation.framework in Frameworks */,
+				067EFA431920D73200C1B75C /* IDEKit.framework in Frameworks */,
 				06FCB3391920B7A80057845B /* QuickLook.framework in Frameworks */,
 				06FCB33D1920B7A80057845B /* CoreServices.framework in Frameworks */,
 				06FCB33B1920B7A80057845B /* ApplicationServices.framework in Frameworks */,
@@ -58,7 +72,7 @@
 		06FCB3361920B7A80057845B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				06FCB3351920B7A80057845B /* XLCXcodeAssist.qlgenerator */,
+				06FCB3351920B7A80057845B /* XLCXcodeAssist.xcplugin */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,6 +80,11 @@
 		06FCB3371920B7A80057845B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				067EFA5A1920DFAC00C1B75C /* IDESourceEditor.ideplugin */,
+				067EFA481920D73D00C1B75C /* DVTFoundation.framework */,
+				067EFA461920D73B00C1B75C /* DVTKit.framework */,
+				067EFA441920D73500C1B75C /* IDEFoundation.framework */,
+				067EFA421920D73200C1B75C /* IDEKit.framework */,
 				06FCB3381920B7A80057845B /* QuickLook.framework */,
 				06FCB33A1920B7A80057845B /* ApplicationServices.framework */,
 				06FCB33C1920B7A80057845B /* CoreServices.framework */,
@@ -77,9 +96,10 @@
 		06FCB3401920B7A80057845B /* XLCXcodeAssist */ = {
 			isa = PBXGroup;
 			children = (
-				06FCB3461920B7A80057845B /* GenerateThumbnailForURL.c */,
-				06FCB3481920B7A80057845B /* GeneratePreviewForURL.c */,
-				06FCB34A1920B7A80057845B /* main.c */,
+				06FCB3521920B7CC0057845B /* XLCXcodeAssist.h */,
+				06FCB3531920B7CC0057845B /* XLCXcodeAssist.m */,
+				067EFA5D1920EE0B00C1B75C /* XLCProxy.m */,
+				069FFD2F19273B12002821F7 /* XcodeHeaders.h */,
 				06FCB3411920B7A80057845B /* Supporting Files */,
 			);
 			path = XLCXcodeAssist;
@@ -102,6 +122,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				06FCB3541920B7CC0057845B /* XLCXcodeAssist.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,7 +145,7 @@
 			);
 			name = XLCXcodeAssist;
 			productName = XLCXcodeAssist;
-			productReference = 06FCB3351920B7A80057845B /* XLCXcodeAssist.qlgenerator */;
+			productReference = 06FCB3351920B7A80057845B /* XLCXcodeAssist.xcplugin */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -179,9 +200,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				06FCB3471920B7A80057845B /* GenerateThumbnailForURL.c in Sources */,
-				06FCB3491920B7A80057845B /* GeneratePreviewForURL.c in Sources */,
-				06FCB34B1920B7A80057845B /* main.c in Sources */,
+				067EFA5F1920EE0B00C1B75C /* XLCProxy.m in Sources */,
+				06FCB3551920B7CC0057845B /* XLCXcodeAssist.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,12 +293,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				DEPLOYMENT_LOCATION = YES;
+				DSTROOT = "$(HOME)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Frameworks",
+					"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/SharedFrameworks",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "XLCXcodeAssist/XLCXcodeAssist-Prefix.pch";
 				INFOPLIST_FILE = "XLCXcodeAssist/XLCXcodeAssist-Info.plist";
-				INSTALL_PATH = /Library/QuickLook;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Application Support/Developer/Shared/Xcode/Plug-ins";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = qlgenerator;
+				WRAPPER_EXTENSION = xcplugin;
 			};
 			name = Debug;
 		};
@@ -286,12 +313,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				DEPLOYMENT_LOCATION = YES;
+				DSTROOT = "$(HOME)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Frameworks",
+					"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/SharedFrameworks",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "XLCXcodeAssist/XLCXcodeAssist-Prefix.pch";
 				INFOPLIST_FILE = "XLCXcodeAssist/XLCXcodeAssist-Info.plist";
-				INSTALL_PATH = /Library/QuickLook;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Application Support/Developer/Shared/Xcode/Plug-ins";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = qlgenerator;
+				WRAPPER_EXTENSION = xcplugin;
 			};
 			name = Release;
 		};
@@ -314,6 +348,7 @@
 				06FCB3511920B7A80057845B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
