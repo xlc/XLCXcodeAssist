@@ -56,94 +56,103 @@
         IMP imp = imp_implementationWithBlock(^id(id me, id loc, id dict, id idx) {
             id ret = ((id (*)(id,SEL,id,id,id))originalImp)(me, sel, loc, dict, idx);
             
-            for (IDEDiagnosticActivityLogMessage * message in ret) {
-                NSString *title = message.title;
-                
-                NSTextCheckingResult *result = [messageRegex firstMatchInString:title options:0 range:NSMakeRange(0, title.length)];
-                if ([result range].location != NSNotFound) {
-                    // found
+            @try {
+                for (IDEDiagnosticActivityLogMessage * message in ret) {
+                    NSString *title = message.title;
                     
-                    //NSString *selname = [title substringWithRange:[result rangeAtIndex:1]];
-                    DVTTextDocumentLocation *bodyLoc = message.location;
-                    
-                    for (IDEDiagnosticActivityLogMessage *submsg in message.submessages) {
-                        NSString *title = submsg.title;
-                        if ([subMessageRegex rangeOfFirstMatchInString:title options:0 range:NSMakeRange(0, title.length)].location != NSNotFound) {
-                            DVTTextDocumentLocation * declLoc = submsg.location;
-                            
-                            IDESourceCodeDocument *headerDoc = [[IDEDocumentController sharedDocumentController] documentForURL:declLoc.documentURL];
-                            IDESourceCodeDocument *bodyDoc = [[IDEDocumentController sharedDocumentController] documentForURL:bodyLoc.documentURL];
-                            
-                            if (!headerDoc || !bodyDoc) {
-                                continue;
-                            }
-                            
-                            DVTTextStorage *headerText = headerDoc.textStorage;
-                            DVTTextStorage *bodyText = bodyDoc.textStorage;
-                            
-                            NSRange declRange = [headerText methodDefinitionRangeAtIndex:declLoc.characterRange.location];
-                            NSString *declStr = [headerText.string substringWithRange:declRange];
-                            
-                            DVTSourceModel *headerModel = headerText.sourceModel;
-                            DVTSourceModelItem *declItem = [headerModel enclosingItemAtLocation:declRange.location];
-                            while (declItem.nodeType != XLCNodeMethodDeclarator && declItem) {
-                                declItem = declItem.parent;
-                            }
-                            if (!declItem) {
-                                continue;
-                            }
-                            
-                            NSString *returnType;
-                            for (DVTSourceModelItem *item in declItem.children) {
-                                if (item.nodeType == XLCNodePlain && item.token == XLCTokenParenExpr) {
-                                    returnType = [[headerText.string substringWithRange:item.range] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-                                    break;
+                    NSTextCheckingResult *result = [messageRegex firstMatchInString:title options:0 range:NSMakeRange(0, title.length)];
+                    if ([result range].location != NSNotFound) {
+                        // found
+                        
+                        //NSString *selname = [title substringWithRange:[result rangeAtIndex:1]];
+                        DVTTextDocumentLocation *bodyLoc = message.location;
+                        
+                        for (IDEDiagnosticActivityLogMessage *submsg in message.submessages) {
+                            NSString *title = submsg.title;
+                            if ([subMessageRegex rangeOfFirstMatchInString:title options:0 range:NSMakeRange(0, title.length)].location != NSNotFound) {
+                                DVTTextDocumentLocation * declLoc = submsg.location;
+                                
+                                IDESourceCodeDocument *headerDoc = [[IDEDocumentController sharedDocumentController] documentForURL:declLoc.documentURL];
+                                IDESourceCodeDocument *bodyDoc = [[IDEDocumentController sharedDocumentController] documentForURL:bodyLoc.documentURL];
+                                
+                                if (!headerDoc || !bodyDoc) {
+                                    continue;
                                 }
+                                
+                                DVTTextStorage *headerText = headerDoc.textStorage;
+                                DVTTextStorage *bodyText = bodyDoc.textStorage;
+                                
+                                NSRange declRange = [headerText methodDefinitionRangeAtIndex:declLoc.characterRange.location];
+                                if (declRange.location == NSNotFound) {
+                                    continue;
+                                }
+                                NSString *declStr = [headerText.string substringWithRange:declRange];
+                                
+                                DVTSourceModel *headerModel = headerText.sourceModel;
+                                DVTSourceModelItem *declItem = [headerModel enclosingItemAtLocation:declRange.location];
+                                while (declItem.nodeType != XLCNodeMethodDeclarator && declItem) {
+                                    declItem = declItem.parent;
+                                }
+                                if (!declItem) {
+                                    continue;
+                                }
+                                
+                                NSString *returnType;
+                                for (DVTSourceModelItem *item in declItem.children) {
+                                    if (item.nodeType == XLCNodePlain && item.token == XLCTokenParenExpr) {
+                                        returnType = [[headerText.string substringWithRange:item.range] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                                        break;
+                                    }
+                                }
+                                if (!returnType) {
+                                    continue;
+                                }
+                                
+                                NSString *returnStatement;
+                                NSString *realReturnType = [returnType stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"()"]];
+                                
+                                if ([realReturnType isEqualToString:@"void"]) {
+                                    returnStatement = @"";
+                                } else if ([realReturnType hasSuffix:@"*"] || [realReturnType isEqualToString:@"id"]) {
+                                    returnStatement = @"return <#nil#>;";
+                                } else {
+                                    returnStatement = [NSString stringWithFormat:@"return <#%@#>;", returnType];
+                                }
+                                
+                                NSString *str = [NSString stringWithFormat:@"%@\n{\n    %@\n}\n\n", declStr, returnStatement];
+                                NSRange bodyPosRange = bodyLoc.characterRange;
+                                
+                                DVTSourceModel *bodyModel = bodyText.sourceModel;
+                                
+                                DVTSourceModelItem *bodyItem = [bodyModel enclosingItemAtLocation:bodyPosRange.location + bodyPosRange.length];
+                                while (bodyItem.nodeType != XLCNodeImplementation && bodyItem) {
+                                    bodyItem = bodyItem.parent;
+                                }
+                                if (!bodyItem) {
+                                    continue;
+                                }
+                                
+                                NSRange replaceRange = {NSNotFound, 0};
+                                
+                                DVTSourceModelItem *endBodyItem = [bodyItem.children lastObject];
+                                replaceRange.location = endBodyItem.range.location;
+                                
+                                DVTTextDocumentLocation *replaceLocation = [[DVTTextDocumentLocation alloc] initWithDocumentURL:bodyLoc.documentURL timestamp:bodyLoc.timestamp characterRange:replaceRange];
+                                
+                                IDEDiagnosticFixItItem * item = [[IDEDiagnosticFixItItem alloc] initWithFixItString:str replacementLocation:replaceLocation];
+                                
+                                item.diagnosticItem = message;
+                                [message.mutableDiagnosticFixItItems addObject:item];
+                                
+                                break;
                             }
-                            if (!returnType) {
-                                continue;
-                            }
-                            
-                            NSString *returnStatement;
-                            NSString *realReturnType = [returnType stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"()"]];
-                            
-                            if ([realReturnType isEqualToString:@"void"]) {
-                                returnStatement = @"";
-                            } else if ([realReturnType hasSuffix:@"*"] || [realReturnType isEqualToString:@"id"]) {
-                                returnStatement = @"return <#nil#>;";
-                            } else {
-                                returnStatement = [NSString stringWithFormat:@"return <#%@#>;", returnType];
-                            }
-                            
-                            NSString *str = [NSString stringWithFormat:@"%@\n{\n    %@\n}\n\n", declStr, returnStatement];
-                            NSRange bodyPosRange = bodyLoc.characterRange;
-                            
-                            DVTSourceModel *bodyModel = bodyText.sourceModel;
-                            
-                            DVTSourceModelItem *bodyItem = [bodyModel enclosingItemAtLocation:bodyPosRange.location + bodyPosRange.length];
-                            while (bodyItem.nodeType != XLCNodeImplementation && bodyItem) {
-                                bodyItem = bodyItem.parent;
-                            }
-                            if (!bodyItem) {
-                                continue;
-                            }
-                            
-                            NSRange replaceRange = {NSNotFound, 0};
-                            
-                            DVTSourceModelItem *endBodyItem = [bodyItem.children lastObject];
-                            replaceRange.location = endBodyItem.range.location;
-                            
-                            DVTTextDocumentLocation *replaceLocation = [[DVTTextDocumentLocation alloc] initWithDocumentURL:bodyLoc.documentURL timestamp:bodyLoc.timestamp characterRange:replaceRange];
-                            
-                            IDEDiagnosticFixItItem * item = [[IDEDiagnosticFixItItem alloc] initWithFixItString:str replacementLocation:replaceLocation];
-                            
-                            item.diagnosticItem = message;
-                            [message.mutableDiagnosticFixItItems addObject:item];
-                            
-                            break;
                         }
                     }
                 }
+            }
+            @catch (id exception) {
+                // something wrong... but I don't want to crash Xcode
+                NSLog(@"%s:%d - %@", __PRETTY_FUNCTION__, __LINE__, exception);
             }
             
             return ret;
