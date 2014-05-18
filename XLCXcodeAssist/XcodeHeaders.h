@@ -106,3 +106,9 @@ typedef NS_ENUM(long long, XLCTokenType) {
 
 @end
 
+@interface IDEDocumentController : NSDocumentController
+
++ (IDEDocumentController *)sharedDocumentController;
+- (id)documentForURL:(id)arg1;
+
+@end

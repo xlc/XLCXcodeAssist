@@ -46,7 +46,6 @@
 
         SEL sel = sel_getUid("codeDiagnosticsAtLocation:withCurrentFileContentDictionary:forIndex:");
         Class IDEIndexClangQueryProviderClass = NSClassFromString(@"IDEIndexClangQueryProvider");
-        Class IDESourceCodeDocumentClass = NSClassFromString(@"IDESourceCodeDocument");
         
         Method method = class_getInstanceMethod(IDEIndexClangQueryProviderClass, sel);
         IMP originalImp = method_getImplementation(method);
@@ -72,21 +71,11 @@
                         if ([subMessageRegex rangeOfFirstMatchInString:title options:0 range:NSMakeRange(0, title.length)].location != NSNotFound) {
                             DVTTextDocumentLocation * declLoc = submsg.location;
                             
-                            NSError *error;
+                            IDESourceCodeDocument *headerDoc = [[IDEDocumentController sharedDocumentController] documentForURL:declLoc.documentURL];
+                            IDESourceCodeDocument *bodyDoc = [[IDEDocumentController sharedDocumentController] documentForURL:bodyLoc.documentURL];
                             
-                            IDESourceCodeDocument *headerDoc = [[IDESourceCodeDocumentClass alloc] initWithContentsOfURL:declLoc.documentURL ofType:@"public.objective-c-source" error:&error];
-                            if (error) {
+                            if (!headerDoc || !bodyDoc) {
                                 continue;
-                            }
-                            
-                            IDESourceCodeDocument *bodyDoc;
-                            if ([declLoc.documentURL isEqual:bodyLoc.documentURL]) {
-                                bodyDoc = headerDoc;
-                            } else {
-                                bodyDoc = [[IDESourceCodeDocumentClass alloc] initWithContentsOfURL:bodyLoc.documentURL ofType:@"public.objective-c-source" error:&error];
-                                if (error) {
-                                    continue;
-                                }
                             }
                             
                             DVTTextStorage *headerText = headerDoc.textStorage;
@@ -150,11 +139,6 @@
                             
                             item.diagnosticItem = message;
                             [message.mutableDiagnosticFixItItems addObject:item];
-                            
-                            [headerDoc close];
-                            if (bodyDoc != headerDoc) {
-                                [bodyDoc close];
-                            }
                             
                             break;
                         }
