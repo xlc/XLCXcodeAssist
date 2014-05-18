@@ -61,6 +61,7 @@
 // objc.parenexpr = 131431
 // objc.method.declarator = 131443
 // objc.implementation = 131470
+// objcpp.parenexpr = 131529
 
 
 typedef NS_ENUM(short, XLCNodeType) {
@@ -73,6 +74,7 @@ typedef NS_ENUM(short, XLCNodeType) {
 typedef NS_ENUM(long long, XLCTokenType) {
     XLCTokenEnd = 131196,
     XLCTokenParenExpr = 131431,
+    XLCTokenCppParenExpr = 131529,
 };
 
 @interface DVTSourceModelItem : NSObject

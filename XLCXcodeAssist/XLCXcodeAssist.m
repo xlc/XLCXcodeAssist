@@ -99,7 +99,7 @@
                                 
                                 NSString *returnType;
                                 for (DVTSourceModelItem *item in declItem.children) {
-                                    if (item.nodeType == XLCNodePlain && item.token == XLCTokenParenExpr) {
+                                    if (item.nodeType == XLCNodePlain && (item.token == XLCTokenParenExpr || item.token == XLCTokenCppParenExpr)) {
                                         returnType = [[headerText.string substringWithRange:item.range] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
                                         break;
                                     }
@@ -113,7 +113,7 @@
                                 
                                 if ([realReturnType isEqualToString:@"void"]) {
                                     returnStatement = @"";
-                                } else if ([realReturnType hasSuffix:@"*"] || [realReturnType isEqualToString:@"id"]) {
+                                } else if ([realReturnType hasSuffix:@"*"] || [realReturnType isEqualToString:@"id"] || [realReturnType isEqualToString:@"instancetype"]) {
                                     returnStatement = @"return <#nil#>;";
                                 } else {
                                     returnStatement = [NSString stringWithFormat:@"return <#%@#>;", returnType];
