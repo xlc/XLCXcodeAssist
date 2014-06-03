@@ -190,5 +190,6 @@ typedef NS_ENUM(short, XLCNodeType) {
 }
 
 - (id)typeSymbolForCXType:(CXType)arg1;
+- (void)performClang:(id)arg1;
 
 @end
