@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		062564AA193C4BCA00572D45 /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 062564A9193C4BCA00572D45 /* libclang.dylib */; };
 		067EFA431920D73200C1B75C /* IDEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA421920D73200C1B75C /* IDEKit.framework */; };
 		067EFA451920D73500C1B75C /* IDEFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA441920D73500C1B75C /* IDEFoundation.framework */; };
 		067EFA471920D73B00C1B75C /* DVTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA461920D73B00C1B75C /* DVTKit.framework */; };
@@ -16,12 +17,15 @@
 		06FCB33B1920B7A80057845B /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33A1920B7A80057845B /* ApplicationServices.framework */; };
 		06FCB33D1920B7A80057845B /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33C1920B7A80057845B /* CoreServices.framework */; };
 		06FCB33F1920B7A80057845B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33E1920B7A80057845B /* CoreFoundation.framework */; };
-		06FCB3451920B7A80057845B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 06FCB3431920B7A80057845B /* InfoPlist.strings */; };
-		06FCB3541920B7CC0057845B /* XLCXcodeAssist.h in Headers */ = {isa = PBXBuildFile; fileRef = 06FCB3521920B7CC0057845B /* XLCXcodeAssist.h */; };
-		06FCB3551920B7CC0057845B /* XLCXcodeAssist.m in Sources */ = {isa = PBXBuildFile; fileRef = 06FCB3531920B7CC0057845B /* XLCXcodeAssist.m */; };
+		06FCB3551920B7CC0057845B /* XLCXcodeAssist.mm in Sources */ = {isa = PBXBuildFile; fileRef = 06FCB3531920B7CC0057845B /* XLCXcodeAssist.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		062564A9193C4BCA00572D45 /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib; sourceTree = DEVELOPER_DIR; };
+		06256668193C559A00572D45 /* CXCompilationDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXCompilationDatabase.h; sourceTree = "<group>"; };
+		06256669193C559A00572D45 /* CXString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXString.h; sourceTree = "<group>"; };
+		0625666A193C559A00572D45 /* Index.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Index.h; sourceTree = "<group>"; };
+		0625666B193C559A00572D45 /* Platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Platform.h; sourceTree = "<group>"; };
 		067EFA421920D73200C1B75C /* IDEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IDEKit.framework; path = ../../../../../Applications/Xcode.app/Contents/Frameworks/IDEKit.framework; sourceTree = "<group>"; };
 		067EFA441920D73500C1B75C /* IDEFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IDEFoundation.framework; path = ../../../../../Applications/Xcode.app/Contents/Frameworks/IDEFoundation.framework; sourceTree = "<group>"; };
 		067EFA461920D73B00C1B75C /* DVTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DVTKit.framework; path = ../../../../../Applications/Xcode.app/Contents/SharedFrameworks/DVTKit.framework; sourceTree = "<group>"; };
@@ -38,7 +42,7 @@
 		06FCB3441920B7A80057845B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		06FCB34C1920B7A80057845B /* XLCXcodeAssist-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XLCXcodeAssist-Prefix.pch"; sourceTree = "<group>"; };
 		06FCB3521920B7CC0057845B /* XLCXcodeAssist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XLCXcodeAssist.h; sourceTree = "<group>"; };
-		06FCB3531920B7CC0057845B /* XLCXcodeAssist.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XLCXcodeAssist.m; sourceTree = "<group>"; };
+		06FCB3531920B7CC0057845B /* XLCXcodeAssist.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = XLCXcodeAssist.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,12 +58,40 @@
 				06FCB3391920B7A80057845B /* QuickLook.framework in Frameworks */,
 				06FCB33D1920B7A80057845B /* CoreServices.framework in Frameworks */,
 				06FCB33B1920B7A80057845B /* ApplicationServices.framework in Frameworks */,
+				062564AA193C4BCA00572D45 /* libclang.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		062564B0193C558700572D45 /* clang */ = {
+			isa = PBXGroup;
+			children = (
+				062564B1193C559900572D45 /* include */,
+			);
+			name = clang;
+			sourceTree = "<group>";
+		};
+		062564B1193C559900572D45 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				06256667193C559A00572D45 /* clang-c */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		06256667193C559A00572D45 /* clang-c */ = {
+			isa = PBXGroup;
+			children = (
+				06256668193C559A00572D45 /* CXCompilationDatabase.h */,
+				06256669193C559A00572D45 /* CXString.h */,
+				0625666A193C559A00572D45 /* Index.h */,
+				0625666B193C559A00572D45 /* Platform.h */,
+			);
+			path = "clang-c";
+			sourceTree = "<group>";
+		};
 		06FCB32A1920B7A80057845B = {
 			isa = PBXGroup;
 			children = (
@@ -80,6 +112,7 @@
 		06FCB3371920B7A80057845B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				062564A9193C4BCA00572D45 /* libclang.dylib */,
 				067EFA5A1920DFAC00C1B75C /* IDESourceEditor.ideplugin */,
 				067EFA481920D73D00C1B75C /* DVTFoundation.framework */,
 				067EFA461920D73B00C1B75C /* DVTKit.framework */,
@@ -96,8 +129,9 @@
 		06FCB3401920B7A80057845B /* XLCXcodeAssist */ = {
 			isa = PBXGroup;
 			children = (
+				062564B0193C558700572D45 /* clang */,
 				06FCB3521920B7CC0057845B /* XLCXcodeAssist.h */,
-				06FCB3531920B7CC0057845B /* XLCXcodeAssist.m */,
+				06FCB3531920B7CC0057845B /* XLCXcodeAssist.mm */,
 				067EFA5D1920EE0B00C1B75C /* XLCProxy.m */,
 				069FFD2F19273B12002821F7 /* XcodeHeaders.h */,
 				06FCB3411920B7A80057845B /* Supporting Files */,
@@ -117,17 +151,6 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXHeadersBuildPhase section */
-		06FCB3311920B7A80057845B /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				06FCB3541920B7CC0057845B /* XLCXcodeAssist.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
-
 /* Begin PBXNativeTarget section */
 		06FCB3341920B7A80057845B /* XLCXcodeAssist */ = {
 			isa = PBXNativeTarget;
@@ -135,8 +158,6 @@
 			buildPhases = (
 				06FCB32F1920B7A80057845B /* Sources */,
 				06FCB3301920B7A80057845B /* Frameworks */,
-				06FCB3311920B7A80057845B /* Headers */,
-				06FCB3321920B7A80057845B /* Resources */,
 				06FCB3331920B7A80057845B /* Rez */,
 			);
 			buildRules = (
@@ -174,17 +195,6 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXResourcesBuildPhase section */
-		06FCB3321920B7A80057845B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				06FCB3451920B7A80057845B /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
 /* Begin PBXRezBuildPhase section */
 		06FCB3331920B7A80057845B /* Rez */ = {
 			isa = PBXRezBuildPhase;
@@ -201,7 +211,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				067EFA5F1920EE0B00C1B75C /* XLCProxy.m in Sources */,
-				06FCB3551920B7CC0057845B /* XLCXcodeAssist.m in Sources */,
+				06FCB3551920B7CC0057845B /* XLCXcodeAssist.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,7 +314,12 @@
 				GCC_PREFIX_HEADER = "XLCXcodeAssist/XLCXcodeAssist-Prefix.pch";
 				INFOPLIST_FILE = "XLCXcodeAssist/XLCXcodeAssist-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/XLCXcodeAssist/include\"";
 				WRAPPER_EXTENSION = xcplugin;
 			};
 			name = Debug;
@@ -324,7 +339,12 @@
 				GCC_PREFIX_HEADER = "XLCXcodeAssist/XLCXcodeAssist-Prefix.pch";
 				INFOPLIST_FILE = "XLCXcodeAssist/XLCXcodeAssist-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/XLCXcodeAssist/include\"";
 				WRAPPER_EXTENSION = xcplugin;
 			};
 			name = Release;

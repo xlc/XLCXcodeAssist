@@ -22,7 +22,7 @@
 + (void)load
 {
 //    {
-//        Class cls = NSClassFromString(@"IDEEditorDocument");
+//        Class cls = NSClassFromString(@"IDEIndex");
 //        id metacls = object_getClass(cls);
 //        IMP imp = class_getMethodImplementation(metacls, @selector(allocWithZone:));
 //        IMP newimp = imp_implementationWithBlock(^id(id me, SEL cmd, NSZone *zone) {
@@ -36,7 +36,7 @@
 //    }
     
 //    {
-//        Class cls = NSClassFromString(@"IDESourceCodeDocument");
+//        Class cls = NSClassFromString(@"IDEIndexClangTranslationUnit");
 //        id metacls = object_getClass(cls);
 //        IMP imp = class_getMethodImplementation(metacls, @selector(allocWithZone:));
 //        IMP newimp = imp_implementationWithBlock(^id(id me, SEL cmd, NSZone *zone) {
@@ -72,20 +72,28 @@
     return proxy;
 }
 
+//- (id)typeSymbolForSymbol:(id)arg1 withCurrentFileContentDictionary:(id)arg2;
+
 - (void)forwardInvocation:(NSInvocation *)invocation
 {
+    const char *selname = sel_getName([invocation selector]);
+    
     [invocation setTarget:_obj];
     [invocation invoke];
-    const char *selname = sel_getName([invocation selector]);
+    
     if ([@(selname) hasPrefix:@"init"] && [[invocation methodSignature] methodReturnType][0] == '@') {
         const void * ret;
         [invocation getReturnValue:&ret];
         ret = CFBridgingRetain([XLCProxy proxyWithObject:_obj]);
         [invocation setReturnValue:&ret];
     }
-//    if ([@(selname) rangeOfString:@"allMethodsMatchingMethod"].location != NSNotFound) {
-//        NSLog(@"%@", invocation);        
-//    }
+    
+    if ([@(selname) rangeOfString:@"symbol"].location != NSNotFound) {
+        NSLog(@"%@", invocation);
+    } else if ([@(selname) rangeOfString:@"Symbol"].location != NSNotFound) {
+        NSLog(@"%@", invocation);
+    }
+    
 //    if ([@(selname) rangeOfString:@"symbolsOccurrencesInContext:withCurrentFileContentDictionary"].location != NSNotFound) {
 //        
 //    }
