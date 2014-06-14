@@ -305,85 +305,90 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
             };
             
             NSMutableArray *existingValeusArray = [NSMutableArray array];
+            CXCursor switchExprCursor;
             
-            CXCursor rootCursor = clang_getCursorSemanticParent(currentCursor);
-            
-            auto root = std::make_shared<Node>();
-            root->cursor = rootCursor;
-            __block std::shared_ptr<Node> currentCursorNode;
-            __block auto current = root;
-            
-            //        NSLog(@"%@ - %@ | %@", NSStringFromCXString(clang_getCursorKindSpelling(currentCursor.kind)), NSStringFromCXString(clang_getCursorSpelling(currentCursor)), NSStringFromCXString(clang_getCursorUSR(currentCursor)));
-            
-            clang_visitChildrenWithBlock(rootCursor, ^enum CXChildVisitResult(CXCursor cursor, CXCursor parent) {
-                if (!my_equalCursors(parent, current->cursor)) { // parent changed
-                    if (!current->children.empty() && my_equalCursors(current->children.back()->cursor, parent)) {
-                        current = current->children.back(); // move in
-                    } else {
-                        while (current && current->parent && !my_equalCursors(current->parent->cursor, parent)) {
+            {
+                CXCursor rootCursor = clang_getCursorSemanticParent(currentCursor);
+                
+                auto root = std::make_shared<Node>();
+                root->cursor = rootCursor;
+                __block std::shared_ptr<Node> currentCursorNode;
+                __block auto current = root;
+                
+                //        NSLog(@"%@ - %@ | %@", NSStringFromCXString(clang_getCursorKindSpelling(currentCursor.kind)), NSStringFromCXString(clang_getCursorSpelling(currentCursor)), NSStringFromCXString(clang_getCursorUSR(currentCursor)));
+                
+                clang_visitChildrenWithBlock(rootCursor, ^enum CXChildVisitResult(CXCursor cursor, CXCursor parent) {
+                    if (!my_equalCursors(parent, current->cursor)) { // parent changed
+                        if (!current->children.empty() && my_equalCursors(current->children.back()->cursor, parent)) {
+                            current = current->children.back(); // move in
+                        } else {
+                            while (current && current->parent && !my_equalCursors(current->parent->cursor, parent)) {
+                                current = current->parent;
+                            }
                             current = current->parent;
                         }
-                        current = current->parent;
                     }
+                    current->children.emplace_back(new Node);
+                    current->children.back()->cursor = cursor;
+                    current->children.back()->parent = current;
+                    if (my_equalCursors(cursor, currentCursor)) {
+                        currentCursorNode = current->children.back();
+                    }
+                    return CXChildVisit_Recurse;
+                });
+                
+                std::function<void(std::shared_ptr<Node>, int)> print = [&](std::shared_ptr<Node> node, int level) {
+                    if (!node) {
+                        return;
+                    }
+                    NSLog(@"%*s%@ - %@ %@", level * 4, "", NSStringFromCXString(clang_getCursorKindSpelling(node->cursor.kind)), NSStringFromCXString(clang_getCursorSpelling(node->cursor)), NSStringFromCXString(clang_getCursorUSR(node->cursor)));
+                    for (auto &child : node->children) {
+                        print(child, level+1);
+                    }
+                };
+                
+                //print(root, 0);
+                
+                while (currentCursorNode && clang_getCursorKind(currentCursorNode->cursor) != CXCursor_SwitchStmt) {
+                    currentCursorNode = currentCursorNode->parent;
                 }
-                current->children.emplace_back(new Node);
-                current->children.back()->cursor = cursor;
-                current->children.back()->parent = current;
-                if (my_equalCursors(cursor, currentCursor)) {
-                    currentCursorNode = current->children.back();
-                }
-                return CXChildVisit_Recurse;
-            });
-            
-            std::function<void(std::shared_ptr<Node>, int)> print = [&](std::shared_ptr<Node> node, int level) {
-                if (!node) {
+                
+                if (!currentCursorNode) {
                     return;
                 }
-                NSLog(@"%*s%@ - %@ %@", level * 4, "", NSStringFromCXString(clang_getCursorKindSpelling(node->cursor.kind)), NSStringFromCXString(clang_getCursorSpelling(node->cursor)), NSStringFromCXString(clang_getCursorUSR(node->cursor)));
-                for (auto &child : node->children) {
-                    print(child, level+1);
+                
+                if (currentCursorNode->children.size() < 2) {
+                    return;
                 }
-            };
-            
-            //        print(root, 0);
-            
-            while (currentCursorNode && clang_getCursorKind(currentCursorNode->cursor) != CXCursor_SwitchStmt) {
-                currentCursorNode = currentCursorNode->parent;
-            }
-            
-            if (!currentCursorNode) {
-                return;
-            }
-            
-            if (currentCursorNode->children.size() < 2) {
-                return;
-            }
-            
-            if (currentCursorNode->children[0]->children.size() < 1) {
-                return;
-            }
-            
-            CXCursor switchExprCursor = clang_getCanonicalCursor(currentCursorNode->children[0]->children[0]->cursor);
-            if (clang_isInvalid(clang_getCursorKind(switchExprCursor))) {
-                return;
-            }
-            
-            auto compoundStmtNode = currentCursorNode->children[1];
-            for (auto &castStmtNode : compoundStmtNode->children) {
-                if (clang_getCursorKind(castStmtNode->cursor) == CXCursor_CaseStmt) {
-                    if (castStmtNode->children.empty()) {
-                        continue;
+                
+                if (currentCursorNode->children[0]->children.size() < 1) {
+                    return;
+                }
+                
+                switchExprCursor = clang_getCanonicalCursor(currentCursorNode->children[0]->children[0]->cursor);
+                if (clang_isInvalid(clang_getCursorKind(switchExprCursor))) {
+                    return;
+                }
+                
+                auto compoundStmtNode = currentCursorNode->children[1];
+                for (auto &castStmtNode : compoundStmtNode->children) {
+                    if (clang_getCursorKind(castStmtNode->cursor) == CXCursor_CaseStmt) {
+                        if (castStmtNode->children.empty()) {
+                            continue;
+                        }
+                        auto exprNode = castStmtNode->children[0];
+                        NSString *val = NSStringFromCXString(clang_getCursorSpelling(exprNode->cursor));
+                        [existingValeusArray addObject:val];
                     }
-                    auto exprNode = castStmtNode->children[0];
-                    NSString *val = NSStringFromCXString(clang_getCursorSpelling(exprNode->cursor));
-                    [existingValeusArray addObject:val];
                 }
             }
             
             CXType switchExprType = clang_getCursorType(switchExprCursor);
             
-            CXCursor declCursor = clang_getTypeDeclaration(switchExprType);
-            
+            CXCursor declCursor = clang_getCursorDefinition(clang_getTypeDeclaration(switchExprType));
+            if (clang_Cursor_isNull(declCursor)) {
+                return;
+            }
             {
                 auto currentCursor = declCursor;
                 auto rootCursor = clang_getCursorSemanticParent(currentCursor);
@@ -412,8 +417,27 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
                     return CXChildVisit_Recurse;
                 });
                 
+                //print(root, 0);
+                
+                std::function<std::shared_ptr<Node>(std::shared_ptr<Node> const &, CXCursor)> search = [&](std::shared_ptr<Node> const &node, CXCursor cursor) -> std::shared_ptr<Node> {
+                    if (!node) {
+                        return nullptr;
+                    }
+                    if (clang_equalCursors(node->cursor, cursor)) {
+                        return node;
+                    }
+                    for (auto & child : node->children) {
+                        if (auto result = search(child, cursor)) {
+                            return result;
+                        }
+                    }
+                    return nullptr;
+                };
+                
                 while (currentCursorNode && currentCursorNode->cursor.kind != CXCursor_EnumDecl) {
-                    if (!currentCursorNode->children.empty()) {
+                    if (currentCursorNode->cursor.kind == CXCursor_TypeRef) {
+                        currentCursorNode = search(root, clang_getCursorDefinition(currentCursorNode->cursor));
+                    } else if (!currentCursorNode->children.empty()) {
                         currentCursorNode = currentCursorNode->children[0];
                     } else {
                         currentCursorNode = nullptr;
@@ -433,6 +457,10 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
             }
             
         }];
+        
+        if ([valuesArr count] == 0) {
+            return;
+        }
         
         NSRange replaceRange = switchBlockItem.range;
         replaceRange.location += replaceRange.length - 1;
@@ -568,4 +596,3 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
 }
 
 @end
-
