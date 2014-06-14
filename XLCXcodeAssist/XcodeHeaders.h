@@ -193,3 +193,11 @@ typedef NS_ENUM(short, XLCNodeType) {
 - (void)performClang:(id)arg1;
 
 @end
+
+@interface DVTCompletingTextView : NSTextView
+
+@end
+
+@interface DVTSourceTextView : DVTCompletingTextView
+
+@end

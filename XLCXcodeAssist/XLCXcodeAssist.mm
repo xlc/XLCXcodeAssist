@@ -21,12 +21,17 @@
 
 @interface XLCXcodeAssist ()
 
+- (void)installDiagnosticsHelper;
+- (void)installSourceTextViewHelper;
+
 - (void)processMethodDefinitionNotFoundMessage:(IDEDiagnosticActivityLogMessage *)message;
 - (void)processSwitchCaseMessage:(IDEDiagnosticActivityLogMessage *)message withIndex:(IDEIndex *)index queryProvider:(IDEIndexClangQueryProvider *)provider;
 
 - (NSString *)itemTokenString:(DVTSourceModelItem *)item;
 - (BOOL)itemIsParenExpr:(DVTSourceModelItem *)item;
 - (BOOL)itemIsBlock:(DVTSourceModelItem *)item;
+
+- (NSRange)rangeOfBeginningOfLineAtRange:(NSRange)range view:(DVTSourceTextView *)view;
 
 @end
 
@@ -69,43 +74,51 @@ static NSString *NSStringFromCXString(CXString str) {
 {
     self = [super init];
     if (self) {
-
-        _tokenStringFunc = (id (*)(long long))dlsym(RTLD_DEFAULT, "_tokenString");
-        SEL sel = sel_getUid("codeDiagnosticsAtLocation:withCurrentFileContentDictionary:forIndex:");
-        Class IDEIndexClangQueryProviderClass = NSClassFromString(@"IDEIndexClangQueryProvider");
-        
-        Method method = class_getInstanceMethod(IDEIndexClangQueryProviderClass, sel);
-        IMP originalImp = method_getImplementation(method);
-        
-        IMP imp = imp_implementationWithBlock(^id(id me, id loc, id dict, IDEIndex *idx) {
-            id ret = ((id (*)(id,SEL,id,id,id))originalImp)(me, sel, loc, dict, idx);
-            
-            try {
-                @try {
-                    for (IDEDiagnosticActivityLogMessage * message in ret) {
-                        [self processMethodDefinitionNotFoundMessage:message];
-                        [self processSwitchCaseMessage:message withIndex:idx queryProvider:me];
-                    }
-                }
-                @catch (id exception) {
-                    // something wrong... but I don't want to crash Xcode
-                    NSLog(@"%s:%d - %@", __PRETTY_FUNCTION__, __LINE__, exception);
-                }
-            }
-            catch(std::exception &e) {
-                NSLog(@"%s:%d - %s", __PRETTY_FUNCTION__, __LINE__, e.what());
-            }
-            catch (...) {
-                NSLog(@"%s:%d - unknown exception", __PRETTY_FUNCTION__, __LINE__);
-            }
-            
-            return ret;
-        });
-        
-        method_setImplementation(method, imp);
+        [self installDiagnosticsHelper];
+        [self installSourceTextViewHelper];
     }
     
     return self;
+}
+
+#pragma mark -
+
+- (void)installDiagnosticsHelper
+{
+    _tokenStringFunc = (id (*)(long long))dlsym(RTLD_DEFAULT, "_tokenString");
+    
+    SEL sel = sel_getUid("codeDiagnosticsAtLocation:withCurrentFileContentDictionary:forIndex:");
+    Class IDEIndexClangQueryProviderClass = NSClassFromString(@"IDEIndexClangQueryProvider");
+    
+    Method method = class_getInstanceMethod(IDEIndexClangQueryProviderClass, sel);
+    IMP originalImp = method_getImplementation(method);
+    
+    IMP imp = imp_implementationWithBlock(^id(id me, id loc, id dict, IDEIndex *idx) {
+        id ret = ((id (*)(id,SEL,id,id,id))originalImp)(me, sel, loc, dict, idx);
+        
+        try {
+            @try {
+                for (IDEDiagnosticActivityLogMessage * message in ret) {
+                    [self processMethodDefinitionNotFoundMessage:message];
+                    [self processSwitchCaseMessage:message withIndex:idx queryProvider:me];
+                }
+            }
+            @catch (id exception) {
+                // something wrong... but I don't want to crash Xcode
+                NSLog(@"%s:%d - %@", __PRETTY_FUNCTION__, __LINE__, exception);
+            }
+        }
+        catch(std::exception &e) {
+            NSLog(@"%s:%d - %s", __PRETTY_FUNCTION__, __LINE__, e.what());
+        }
+        catch (...) {
+            NSLog(@"%s:%d - unknown exception", __PRETTY_FUNCTION__, __LINE__);
+        }
+        
+        return ret;
+    });
+    
+    method_setImplementation(method, imp);
 }
 
 - (void)processMethodDefinitionNotFoundMessage:(IDEDiagnosticActivityLogMessage *)message
@@ -471,6 +484,87 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
 {
     NSString *token = [self itemTokenString:item];
     return [token hasSuffix:@".block'"];
+}
+
+#pragma mark -
+
+- (void)installSourceTextViewHelper
+{
+    SEL sel = sel_getUid("setSelectedRange:affinity:stillSelecting:");
+    Class DVTSourceTextViewClass = NSClassFromString(@"DVTSourceTextView");
+    
+    Method method = class_getInstanceMethod(DVTSourceTextViewClass, sel);
+    IMP originalImp = method_getImplementation(method);
+    
+    IMP imp = imp_implementationWithBlock(^void(DVTSourceTextView * view, NSRange range, NSSelectionAffinity affinity, BOOL stillSelecting) {
+        if (!stillSelecting) {
+            try {
+                @try {
+                    NSString *caller = [NSThread callStackSymbols][1];
+                    if ([caller rangeOfString:@"moveToBeginningOfLine"].location != NSNotFound) {
+                        NSRange newrange = [self rangeOfBeginningOfLineAtRange:range view:view];
+                        NSRange oldrange = view.selectedRange;
+                        if (newrange.location < oldrange.location) {
+                            range = newrange;
+                        }
+                    }
+                }
+                @catch (id exception) {
+                    // something wrong... but I don't want to crash Xcode
+                    NSLog(@"%s:%d - %@", __PRETTY_FUNCTION__, __LINE__, exception);
+                }
+            }
+            catch(std::exception &e) {
+                NSLog(@"%s:%d - %s", __PRETTY_FUNCTION__, __LINE__, e.what());
+            }
+            catch (...) {
+                NSLog(@"%s:%d - unknown exception", __PRETTY_FUNCTION__, __LINE__);
+            }
+        }
+        
+        ((void (*)(id,SEL,NSRange,NSSelectionAffinity,BOOL))originalImp)(view, sel, range, affinity, stillSelecting);
+    });
+    
+    method_setImplementation(method, imp);
+}
+
+- (NSRange)rangeOfBeginningOfLineAtRange:(NSRange)range view:(DVTSourceTextView *)view
+{
+    DVTTextStorage *textStorage = (DVTTextStorage *)view.textStorage;
+    DVTSourceModel *model = textStorage.sourceModel;
+    
+    NSUInteger loc = range.location;
+    NSString *str = textStorage.string;
+    
+    // find first non-whitespace character in this line
+    NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
+    NSCharacterSet *newlineSet = [NSCharacterSet newlineCharacterSet];
+    while (loc < str.length) {
+        unichar c = [str characterAtIndex:loc];
+        if (![whitespaceSet characterIsMember:c]) {
+            break;
+        }
+        if ([newlineSet characterIsMember:c]) {
+            return range;
+        }
+        ++loc;
+    }
+    if (loc >= str.length) {
+        return range;
+    }
+    
+    DVTSourceModelItem *item = [model enclosingItemAtLocation:loc];
+    
+    NSInteger indent = [model indentForItem:item];
+    
+    range.location += indent;
+    if (range.length >= indent) {
+        range.length -= indent;
+    } else {
+        range.length = 0;
+    }
+    
+    return range;
 }
 
 @end
