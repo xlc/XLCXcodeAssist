@@ -30,6 +30,8 @@
 - (NSString *)itemTokenString:(DVTSourceModelItem *)item;
 - (BOOL)itemIsParenExpr:(DVTSourceModelItem *)item;
 - (BOOL)itemIsBlock:(DVTSourceModelItem *)item;
+- (BOOL)itemIsMethodDeclarator:(DVTSourceModelItem *)item;
+- (BOOL)itemIsImplementation:(DVTSourceModelItem *)item;
 
 - (NSRange)rangeOfBeginningOfLineAtRange:(NSRange)range view:(DVTSourceTextView *)view;
 
@@ -162,9 +164,12 @@ static NSString *NSStringFromCXString(CXString str) {
                 }
                 NSString *declStr = [headerText.string substringWithRange:declRange];
                 
-                DVTSourceModel *headerModel = headerText.sourceModel;
+                __block DVTSourceModel *headerModel;
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    headerModel = headerText.sourceModel;
+                });
                 DVTSourceModelItem *declItem = [headerModel enclosingItemAtLocation:declRange.location];
-                while (declItem.nodeType != XLCNodeMethodDeclarator && declItem) {
+                while (![self itemIsMethodDeclarator:declItem] && declItem) {
                     declItem = declItem.parent;
                 }
                 if (!declItem) {
@@ -196,10 +201,13 @@ static NSString *NSStringFromCXString(CXString str) {
                 NSString *str = [NSString stringWithFormat:@"%@\n{\n    %@\n}\n\n", declStr, returnStatement];
                 NSRange bodyPosRange = bodyLoc.characterRange;
                 
-                DVTSourceModel *bodyModel = bodyText.sourceModel;
+                __block DVTSourceModel *bodyModel;
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    bodyModel = bodyText.sourceModel;
+                });
                 
                 DVTSourceModelItem *bodyItem = [bodyModel enclosingItemAtLocation:bodyPosRange.location + bodyPosRange.length];
-                while (bodyItem.nodeType != XLCNodeImplementation && bodyItem) {
+                while (![self itemIsImplementation:bodyItem] && bodyItem) {
                     bodyItem = bodyItem.parent;
                 }
                 if (!bodyItem) {
@@ -257,7 +265,10 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
         DVTTextDocumentLocation *loc = message.location;
         IDESourceCodeDocument *doc = [[IDEDocumentController sharedDocumentController] documentForURL:loc.documentURL];
         DVTTextStorage *textStorage = doc.textStorage;
-        DVTSourceModel *model = textStorage.sourceModel;
+        __block DVTSourceModel *model;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            model = textStorage.sourceModel;
+        });
         
         DVTSourceModelItem *blockItem = [model enclosingItemAtLocation:loc.characterRange.location];
 
@@ -512,6 +523,18 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
 {
     NSString *token = [self itemTokenString:item];
     return [token hasSuffix:@".block'"];
+}
+
+- (BOOL)itemIsMethodDeclarator:(DVTSourceModelItem *)item
+{
+    NSString *token = [self itemTokenString:item];
+    return [token hasSuffix:@".method.declarator'"];
+}
+
+- (BOOL)itemIsImplementation:(DVTSourceModelItem *)item
+{
+    NSString *token = [self itemTokenString:item];
+    return [token hasSuffix:@".implementation'"];
 }
 
 #pragma mark -

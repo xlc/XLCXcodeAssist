@@ -71,19 +71,13 @@
 // objcpp.parenexpr = 131529
 // switch = 131169
 
-
-typedef NS_ENUM(short, XLCNodeType) {
-    XLCNodeMethodDeclarator = 42,
-    XLCNodeImplementation = 45,
-};
-
 @interface DVTSourceModelItem : NSObject
 
 @property(retain) NSArray * children;
 @property long long token;
 
 - (DVTSourceModelItem *)parent;
-- (XLCNodeType)nodeType;
+- (short)nodeType;
 - (NSRange)range;
 
 - (NSString *)simpleDescription;
