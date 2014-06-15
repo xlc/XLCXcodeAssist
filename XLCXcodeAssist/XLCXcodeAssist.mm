@@ -558,8 +558,7 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
 
 - (NSRange)rangeOfBeginningOfLineAtRange:(NSRange)range view:(DVTSourceTextView *)view
 {
-    DVTTextStorage *textStorage = (DVTTextStorage *)view.textStorage;
-    DVTSourceModel *model = textStorage.sourceModel;
+    NSTextStorage *textStorage = view.textStorage;
     
     NSUInteger loc = range.location;
     NSString *str = textStorage.string;
@@ -581,9 +580,7 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
         return range;
     }
     
-    DVTSourceModelItem *item = [model enclosingItemAtLocation:loc];
-    
-    NSInteger indent = [model indentForItem:item];
+    NSInteger indent = loc - range.location;
     
     range.location += indent;
     if (range.length >= indent) {
