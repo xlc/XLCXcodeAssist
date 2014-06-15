@@ -1,13 +1,18 @@
 XLCXcodeAssist
 ==============
 
-Xcode plug-in to provide some handy feature:
+Xcode plug-in to provide some handy features:
 
 - Suggest implementation for missing Objective-C methods
 
-![screenshot.png](https://raw.githubusercontent.com/xlc/XLCXcodeAssist/master/screenshot.png)
+![method](https://raw.githubusercontent.com/xlc/XLCXcodeAssist/master/images/method.png)
 
 - Suggest missing switch case statements
+
+![switch](https://raw.githubusercontent.com/xlc/XLCXcodeAssist/master/images/switch.png)
+
+- Smarter `⌘`+`←` and `⌘` + `⇧` + `←`
+	- Move/Select cursor to position before first non-white space character instead of very beginning of the line
 
 ## Requirements
 
