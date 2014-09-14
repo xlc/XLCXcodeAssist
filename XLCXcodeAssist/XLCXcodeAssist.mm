@@ -32,6 +32,7 @@
 - (BOOL)itemIsBlock:(DVTSourceModelItem *)item;
 - (BOOL)itemIsMethodDeclarator:(DVTSourceModelItem *)item;
 - (BOOL)itemIsImplementation:(DVTSourceModelItem *)item;
+- (BOOL)itemIsEndToken:(DVTSourceModelItem *)item;
 
 - (NSRange)rangeOfBeginningOfLineAtRange:(NSRange)range view:(DVTSourceTextView *)view;
 
@@ -206,18 +207,34 @@ static NSString *NSStringFromCXString(CXString str) {
                     bodyModel = bodyText.sourceModel;
                 });
                 
-                DVTSourceModelItem *bodyItem = [bodyModel enclosingItemAtLocation:bodyPosRange.location + bodyPosRange.length];
-                while (![self itemIsImplementation:bodyItem] && bodyItem) {
-                    bodyItem = bodyItem.parent;
-                }
+                
+                DVTSourceModelItem *bodyItem = (^DVTSourceModelItem *{
+                    DVTSourceModelItem *bodyItem = [bodyModel enclosingItemAtLocation:bodyPosRange.location + bodyPosRange.length];
+                    DVTSourceModelItem *bodyItem2 = bodyItem;
+                    while (![self itemIsImplementation:bodyItem] && bodyItem) {
+                        bodyItem = bodyItem.parent;
+                    }
+                    if (!bodyItem) {
+                        // try again with siblings
+                        bodyItem = bodyItem2;
+                        while (![self itemIsImplementation:bodyItem] && bodyItem) {
+                            for (DVTSourceModelItem *sibling in bodyItem.parent.children) {
+                                if ([self itemIsEndToken:sibling]) {
+                                    return sibling;
+                                }
+                            }
+                            bodyItem = bodyItem.parent;
+                        }
+                    }
+                    return [bodyItem.children lastObject];
+                })();
                 if (!bodyItem) {
                     continue;
                 }
                 
                 NSRange replaceRange = {NSNotFound, 0};
                 
-                DVTSourceModelItem *endBodyItem = [bodyItem.children lastObject];
-                replaceRange.location = endBodyItem.range.location;
+                replaceRange.location = bodyItem.range.location;
                 
                 DVTTextDocumentLocation *replaceLocation = [[DVTTextDocumentLocation alloc] initWithDocumentURL:bodyLoc.documentURL timestamp:bodyLoc.timestamp characterRange:replaceRange];
                 
@@ -528,13 +545,19 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
 - (BOOL)itemIsMethodDeclarator:(DVTSourceModelItem *)item
 {
     NSString *token = [self itemTokenString:item];
-    return [token hasSuffix:@".method.declarator'"];
+    return [token hasSuffix:@".method.declarator'"] || [token hasSuffix:@".classmethod.declarator'"];
 }
 
 - (BOOL)itemIsImplementation:(DVTSourceModelItem *)item
 {
     NSString *token = [self itemTokenString:item];
     return [token hasSuffix:@".implementation'"];
+}
+
+- (BOOL)itemIsEndToken:(DVTSourceModelItem *)item
+{
+    NSString *token = [self itemTokenString:item];
+    return [token hasSuffix:@"@end'"];
 }
 
 #pragma mark -
