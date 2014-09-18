@@ -13,6 +13,8 @@
 		067EFA471920D73B00C1B75C /* DVTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA461920D73B00C1B75C /* DVTKit.framework */; };
 		067EFA491920D73D00C1B75C /* DVTFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA481920D73D00C1B75C /* DVTFoundation.framework */; };
 		067EFA5F1920EE0B00C1B75C /* XLCProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 067EFA5D1920EE0B00C1B75C /* XLCProxy.m */; };
+		06B1140519C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m in Sources */ = {isa = PBXBuildFile; fileRef = 06B1140419C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m */; };
+		06B1140819C95F3700EC72E0 /* ClangHelpers.mm in Sources */ = {isa = PBXBuildFile; fileRef = 06B1140719C95F3700EC72E0 /* ClangHelpers.mm */; };
 		06FCB3391920B7A80057845B /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB3381920B7A80057845B /* QuickLook.framework */; };
 		06FCB33B1920B7A80057845B /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33A1920B7A80057845B /* ApplicationServices.framework */; };
 		06FCB33D1920B7A80057845B /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33C1920B7A80057845B /* CoreServices.framework */; };
@@ -33,6 +35,10 @@
 		067EFA5A1920DFAC00C1B75C /* IDESourceEditor.ideplugin */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = IDESourceEditor.ideplugin; path = ../../../../../Applications/Xcode.app/Contents/PlugIns/IDESourceEditor.ideplugin; sourceTree = "<group>"; };
 		067EFA5D1920EE0B00C1B75C /* XLCProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XLCProxy.m; sourceTree = "<group>"; };
 		069FFD2F19273B12002821F7 /* XcodeHeaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XcodeHeaders.h; sourceTree = "<group>"; };
+		06B1140319C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DVTSourceModelItem+XLCAddition.h"; sourceTree = "<group>"; };
+		06B1140419C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DVTSourceModelItem+XLCAddition.m"; sourceTree = "<group>"; };
+		06B1140619C95F3700EC72E0 /* ClangHelpers.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ClangHelpers.hh; sourceTree = "<group>"; };
+		06B1140719C95F3700EC72E0 /* ClangHelpers.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ClangHelpers.mm; sourceTree = "<group>"; };
 		06FCB3351920B7A80057845B /* XLCXcodeAssist.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XLCXcodeAssist.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		06FCB3381920B7A80057845B /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
 		06FCB33A1920B7A80057845B /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
@@ -134,6 +140,10 @@
 				06FCB3531920B7CC0057845B /* XLCXcodeAssist.mm */,
 				067EFA5D1920EE0B00C1B75C /* XLCProxy.m */,
 				069FFD2F19273B12002821F7 /* XcodeHeaders.h */,
+				06B1140619C95F3700EC72E0 /* ClangHelpers.hh */,
+				06B1140719C95F3700EC72E0 /* ClangHelpers.mm */,
+				06B1140319C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.h */,
+				06B1140419C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m */,
 				06FCB3411920B7A80057845B /* Supporting Files */,
 			);
 			path = XLCXcodeAssist;
@@ -211,7 +221,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				067EFA5F1920EE0B00C1B75C /* XLCProxy.m in Sources */,
+				06B1140819C95F3700EC72E0 /* ClangHelpers.mm in Sources */,
 				06FCB3551920B7CC0057845B /* XLCXcodeAssist.mm in Sources */,
+				06B1140519C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,10 +14,10 @@
 #include <functional>
 
 #import <objc/runtime.h>
-#import <dlfcn.h>
-#import "Index.h"
 
 #import "XcodeHeaders.h"
+#import "ClangHelpers.hh"
+#import "DVTSourceModelItem+XLCAddition.h"
 
 @interface XLCXcodeAssist ()
 
@@ -27,26 +27,11 @@
 - (void)processMethodDefinitionNotFoundMessage:(IDEDiagnosticActivityLogMessage *)message;
 - (void)processSwitchCaseMessage:(IDEDiagnosticActivityLogMessage *)message withIndex:(IDEIndex *)index queryProvider:(IDEIndexClangQueryProvider *)provider;
 
-- (NSString *)itemTokenString:(DVTSourceModelItem *)item;
-- (BOOL)itemIsParenExpr:(DVTSourceModelItem *)item;
-- (BOOL)itemIsBlock:(DVTSourceModelItem *)item;
-- (BOOL)itemIsMethodDeclarator:(DVTSourceModelItem *)item;
-- (BOOL)itemIsImplementation:(DVTSourceModelItem *)item;
-- (BOOL)itemIsEndToken:(DVTSourceModelItem *)item;
-
 - (NSRange)rangeOfBeginningOfLineAtRange:(NSRange)range view:(DVTSourceTextView *)view;
 
 @end
 
-static NSString *NSStringFromCXString(CXString str) {
-    NSString *s = @(clang_getCString(str));
-    clang_disposeString(str);
-    return s;
-}
-
-@implementation XLCXcodeAssist {
-    id (*_tokenStringFunc)(long long);
-}
+@implementation XLCXcodeAssist
 
 + (void)pluginDidLoad:(NSBundle *)plugin
 {
@@ -88,8 +73,6 @@ static NSString *NSStringFromCXString(CXString str) {
 
 - (void)installDiagnosticsHelper
 {
-    _tokenStringFunc = (id (*)(long long))dlsym(RTLD_DEFAULT, "_tokenString");
-    
     SEL sel = sel_getUid("codeDiagnosticsAtLocation:withCurrentFileContentDictionary:forIndex:");
     Class IDEIndexClangQueryProviderClass = NSClassFromString(@"IDEIndexClangQueryProvider");
     
@@ -170,16 +153,14 @@ static NSString *NSStringFromCXString(CXString str) {
                     headerModel = headerText.sourceModel;
                 });
                 DVTSourceModelItem *declItem = [headerModel enclosingItemAtLocation:declRange.location];
-                while (![self itemIsMethodDeclarator:declItem] && declItem) {
-                    declItem = declItem.parent;
-                }
+                declItem = [declItem xlc_findMethodDeclaratorParent];
                 if (!declItem) {
                     continue;
                 }
                 
                 NSString *returnType;
                 for (DVTSourceModelItem *item in declItem.children) {
-                    if ([self itemIsParenExpr:item]) {
+                    if ([item xlc_isParenExpr]) {
                         returnType = [[headerText.string substringWithRange:item.range] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
                         break;
                     }
@@ -211,15 +192,15 @@ static NSString *NSStringFromCXString(CXString str) {
                 DVTSourceModelItem *bodyItem = (^DVTSourceModelItem *{
                     DVTSourceModelItem *bodyItem = [bodyModel enclosingItemAtLocation:bodyPosRange.location + bodyPosRange.length];
                     DVTSourceModelItem *bodyItem2 = bodyItem;
-                    while (![self itemIsImplementation:bodyItem] && bodyItem) {
+                    while (![bodyItem xlc_isImplementation] && bodyItem) {
                         bodyItem = bodyItem.parent;
                     }
                     if (!bodyItem) {
                         // try again with siblings
                         bodyItem = bodyItem2;
-                        while (![self itemIsImplementation:bodyItem] && bodyItem) {
+                        while (![bodyItem xlc_isImplementation] && bodyItem) {
                             for (DVTSourceModelItem *sibling in bodyItem.parent.children) {
-                                if ([self itemIsEndToken:sibling]) {
+                                if ([sibling xlc_isEndToken]) {
                                     return sibling;
                                 }
                             }
@@ -247,12 +228,6 @@ static NSString *NSStringFromCXString(CXString str) {
             }
         }
     }
-}
-
-static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
-    X.data[0] = NULL; // clear parent
-    Y.data[0] = NULL;
-    return clang_equalCursors(X, Y);
 }
 
 - (void)processSwitchCaseMessage:(IDEDiagnosticActivityLogMessage *)message withIndex:(IDEIndex *)index queryProvider:(IDEIndexClangQueryProvider *)provider
@@ -288,32 +263,12 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
         });
         
         DVTSourceModelItem *blockItem = [model enclosingItemAtLocation:loc.characterRange.location];
-
-        while (blockItem && ![self itemIsBlock:blockItem]) {
-            blockItem = blockItem.parent;
-        }
+        blockItem = [blockItem xlc_findBlockParent];
         if (!blockItem) {
             return;
         }
         
-        BOOL foundSwitchItem = NO;
-        DVTSourceModelItem *switchBlockItem;
-        for (DVTSourceModelItem *item in blockItem.children) {
-            if (foundSwitchItem) {
-                if ([self itemIsBlock:item]) {
-                    if (item.range.location >= loc.characterRange.location) {
-                        switchBlockItem = item;
-                        break;
-                    } else {
-                        foundSwitchItem = NO;
-                    }
-                }
-            }
-            if ([[self itemTokenString:item] isEqualToString:@"'switch'"]) {
-                foundSwitchItem = YES;
-            }
-        }
-        
+        DVTSourceModelItem *switchBlockItem = [blockItem xlc_searchSwitchChildAfterLocation:loc.characterRange.location];
         if (!switchBlockItem) {
             return;
         }
@@ -326,59 +281,17 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
             CXSourceLocation sloc = clang_getLocationForOffset(tu, file, (unsigned int)loc.characterRange.location);
             CXCursor currentCursor = clang_getCursor(tu, sloc);
             
-            struct Node {
-                CXCursor cursor;
-                std::deque<std::shared_ptr<Node>> children;
-                std::shared_ptr<Node> parent;
-            };
+            using Node = xlc::clang::Node;
             
             NSMutableArray *existingValeusArray = [NSMutableArray array];
             CXCursor switchExprCursor;
             
             {
-                CXCursor rootCursor = clang_getCursorSemanticParent(currentCursor);
-                
-                auto root = std::make_shared<Node>();
-                root->cursor = rootCursor;
-                __block std::shared_ptr<Node> currentCursorNode;
-                __block auto current = root;
-                
-                //        NSLog(@"%@ - %@ | %@", NSStringFromCXString(clang_getCursorKindSpelling(currentCursor.kind)), NSStringFromCXString(clang_getCursorSpelling(currentCursor)), NSStringFromCXString(clang_getCursorUSR(currentCursor)));
-                
-                clang_visitChildrenWithBlock(rootCursor, ^enum CXChildVisitResult(CXCursor cursor, CXCursor parent) {
-                    if (!my_equalCursors(parent, current->cursor)) { // parent changed
-                        if (!current->children.empty() && my_equalCursors(current->children.back()->cursor, parent)) {
-                            current = current->children.back(); // move in
-                        } else {
-                            while (current && current->parent && !my_equalCursors(current->parent->cursor, parent)) {
-                                current = current->parent;
-                            }
-                            current = current->parent;
-                        }
-                    }
-                    current->children.emplace_back(new Node);
-                    current->children.back()->cursor = cursor;
-                    current->children.back()->parent = current;
-                    if (my_equalCursors(cursor, currentCursor)) {
-                        currentCursorNode = current->children.back();
-                    }
-                    return CXChildVisit_Recurse;
-                });
-                
-                std::function<void(std::shared_ptr<Node>, int)> print = [&](std::shared_ptr<Node> node, int level) {
-                    if (!node) {
-                        return;
-                    }
-                    NSLog(@"%*s%@ - %@ %@", level * 4, "", NSStringFromCXString(clang_getCursorKindSpelling(node->cursor.kind)), NSStringFromCXString(clang_getCursorSpelling(node->cursor)), NSStringFromCXString(clang_getCursorUSR(node->cursor)));
-                    for (auto &child : node->children) {
-                        print(child, level+1);
-                    }
-                };
-                
-                //print(root, 0);
+                std::shared_ptr<Node> root;
+                auto currentCursorNode = xlc::clang::buildCursorTreeAndFind(currentCursor, true, root);
                 
                 while (currentCursorNode && clang_getCursorKind(currentCursorNode->cursor) != CXCursor_SwitchStmt) {
-                    currentCursorNode = currentCursorNode->parent;
+                    currentCursorNode = currentCursorNode->parent.lock();
                 }
                 
                 if (!currentCursorNode) {
@@ -418,53 +331,12 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
                 return;
             }
             {
-                auto currentCursor = declCursor;
-                auto rootCursor = clang_getCursorSemanticParent(currentCursor);
-                auto root = std::make_shared<Node>();
-                root->cursor = rootCursor;
-                __block std::shared_ptr<Node> currentCursorNode;
-                __block auto current = root;
-                
-                clang_visitChildrenWithBlock(rootCursor, ^enum CXChildVisitResult(CXCursor cursor, CXCursor parent) {
-                    if (!clang_equalCursors(parent, current->cursor)) { // parent changed
-                        if (!current->children.empty() && clang_equalCursors(current->children.back()->cursor, parent)) {
-                            current = current->children.back(); // move in
-                        } else {
-                            while (current && current->parent && !clang_equalCursors(current->parent->cursor, parent)) {
-                                current = current->parent;
-                            }
-                            current = current->parent;
-                        }
-                    }
-                    current->children.emplace_back(new Node);
-                    current->children.back()->cursor = cursor;
-                    current->children.back()->parent = current;
-                    if (clang_equalCursors(cursor, currentCursor)) {
-                        currentCursorNode = current->children.back();
-                    }
-                    return CXChildVisit_Recurse;
-                });
-                
-                //print(root, 0);
-                
-                std::function<std::shared_ptr<Node>(std::shared_ptr<Node> const &, CXCursor)> search = [&](std::shared_ptr<Node> const &node, CXCursor cursor) -> std::shared_ptr<Node> {
-                    if (!node) {
-                        return nullptr;
-                    }
-                    if (clang_equalCursors(node->cursor, cursor)) {
-                        return node;
-                    }
-                    for (auto & child : node->children) {
-                        if (auto result = search(child, cursor)) {
-                            return result;
-                        }
-                    }
-                    return nullptr;
-                };
+                std::shared_ptr<Node> root;
+                auto currentCursorNode = xlc::clang::buildCursorTreeAndFind(declCursor, false, root);
                 
                 while (currentCursorNode && currentCursorNode->cursor.kind != CXCursor_EnumDecl) {
                     if (currentCursorNode->cursor.kind == CXCursor_TypeRef) {
-                        currentCursorNode = search(root, clang_getCursorDefinition(currentCursorNode->cursor));
+                        currentCursorNode = root->search(clang_getCursorDefinition(currentCursorNode->cursor));
                     } else if (!currentCursorNode->children.empty()) {
                         currentCursorNode = currentCursorNode->children[0];
                     } else {
@@ -477,7 +349,7 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
                 }
                 
                 for (auto &child : currentCursorNode->children) {
-                    NSString *val = NSStringFromCXString(clang_getCursorSpelling(child->cursor));
+                    NSString *val = child->cursorSpelling();
                     if (![existingValeusArray containsObject:val]) {
                         [valuesArr addObject:val];
                     }
@@ -523,41 +395,6 @@ static unsigned my_equalCursors(CXCursor X, CXCursor Y) {
         [message.mutableDiagnosticFixItItems addObject:item];
     }
     
-}
-
-- (NSString *)itemTokenString:(DVTSourceModelItem *)item
-{
-    return _tokenStringFunc(item.token);
-}
-
-- (BOOL)itemIsParenExpr:(DVTSourceModelItem *)item
-{
-    NSString *token = [self itemTokenString:item];
-    return [token hasSuffix:@".parenexpr'"];
-}
-
-- (BOOL)itemIsBlock:(DVTSourceModelItem *)item
-{
-    NSString *token = [self itemTokenString:item];
-    return [token hasSuffix:@".block'"];
-}
-
-- (BOOL)itemIsMethodDeclarator:(DVTSourceModelItem *)item
-{
-    NSString *token = [self itemTokenString:item];
-    return [token hasSuffix:@".method.declarator'"] || [token hasSuffix:@".classmethod.declarator'"];
-}
-
-- (BOOL)itemIsImplementation:(DVTSourceModelItem *)item
-{
-    NSString *token = [self itemTokenString:item];
-    return [token hasSuffix:@".implementation'"];
-}
-
-- (BOOL)itemIsEndToken:(DVTSourceModelItem *)item
-{
-    NSString *token = [self itemTokenString:item];
-    return [token hasSuffix:@"@end'"];
 }
 
 #pragma mark -
