@@ -16,11 +16,20 @@ Xcode plug-in to provide some handy features:
 
 ## Requirements
 
-Xcode 5.1.1 
+Xcode 6
+
+Or
+
+Xcode 5.1.1
 
 ## Install
 
+Install via [Alcatraz](http://alcatraz.io)
+
+Or
+
 Clone and build the project, then restart Xcode.
+
 
 ## Uninstall
 
