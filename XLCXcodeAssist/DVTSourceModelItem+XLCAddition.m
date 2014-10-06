@@ -33,10 +33,21 @@
     return [[self xlc_tokenString] hasSuffix:@".block'"];
 }
 
+- (BOOL)xlc_IsClassMethodDeclarator
+{
+    return [[self xlc_tokenString] hasSuffix:@".classmethod.declarator'"];
+}
+
 - (BOOL)xlc_isMethodDeclarator
 {
     NSString *token = [self xlc_tokenString];
     return [token hasSuffix:@".method.declarator'"] || [token hasSuffix:@".classmethod.declarator'"];
+}
+
+- (BOOL)xlc_isMethodDefinition
+{
+    NSString *token = [self xlc_tokenString];
+    return [token hasSuffix:@".method.definition'"];
 }
 
 - (BOOL)xlc_isImplementation
@@ -47,6 +58,16 @@
 - (BOOL)xlc_isEndToken
 {
     return [[self xlc_tokenString] hasSuffix:@"@end'"];
+}
+
+- (BOOL)xlc_isPartialName
+{
+    return [[self xlc_tokenString] hasSuffix:@".partialname'"];
+}
+
+- (BOOL)xlc_isMethodColon
+{
+    return [[self xlc_tokenString] hasSuffix:@".method.colon'"];
 }
 
 - (DVTSourceModelItem *)xlc_findMethodDeclaratorParent
@@ -87,6 +108,24 @@
         }
     }
     return switchBlockItem;
+}
+
+- (BOOL)xlc_preOrderTraverse:(void (^)(DVTSourceModelItem *item, BOOL *stop))block
+{
+    if (!block) {
+        return NO;
+    }
+    BOOL stop = NO;
+    block(self, &stop);
+    if (stop) {
+        return NO;
+    }
+    for (DVTSourceModelItem *item in self.children) {
+        if (![item xlc_preOrderTraverse:block]) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 @end

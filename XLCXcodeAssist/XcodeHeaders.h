@@ -53,24 +53,6 @@
 
 @end
 
-// ------- node type -------
-// xcode.syntax.plain = 0
-// xcode.syntax.keyword = 7
-// xcode.syntax.identifier = 24
-// xcode.syntax.method.declarator = 42
-// xcode.syntax.definition.objc.implementation = 45
-// ------- token -------
-// c.block = 131370
-// cpp.block = 131401
-// objc.block = 131468
-// objcpp.block = 131573
-// @end = 131196
-// objc.parenexpr = 131431
-// objc.method.declarator = 131443
-// objc.implementation = 131470
-// objcpp.parenexpr = 131529
-// switch = 131169
-
 @interface DVTSourceModelItem : NSObject
 
 @property(retain) NSArray * children;
@@ -79,6 +61,7 @@
 - (DVTSourceModelItem *)parent;
 - (short)nodeType;
 - (NSRange)range;
+- (id)nextItem;
 
 - (NSString *)simpleDescription;
 

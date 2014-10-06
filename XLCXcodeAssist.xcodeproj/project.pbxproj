@@ -15,6 +15,7 @@
 		067EFA5F1920EE0B00C1B75C /* XLCProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 067EFA5D1920EE0B00C1B75C /* XLCProxy.m */; };
 		06B1140519C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m in Sources */ = {isa = PBXBuildFile; fileRef = 06B1140419C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m */; };
 		06B1140819C95F3700EC72E0 /* ClangHelpers.mm in Sources */ = {isa = PBXBuildFile; fileRef = 06B1140719C95F3700EC72E0 /* ClangHelpers.mm */; };
+		06B28DD519DEA7F300B99102 /* SuggestMissingMethods.mm in Sources */ = {isa = PBXBuildFile; fileRef = 06B28DD419DEA7F300B99102 /* SuggestMissingMethods.mm */; };
 		06FCB3391920B7A80057845B /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB3381920B7A80057845B /* QuickLook.framework */; };
 		06FCB33B1920B7A80057845B /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33A1920B7A80057845B /* ApplicationServices.framework */; };
 		06FCB33D1920B7A80057845B /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06FCB33C1920B7A80057845B /* CoreServices.framework */; };
@@ -39,6 +40,8 @@
 		06B1140419C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DVTSourceModelItem+XLCAddition.m"; sourceTree = "<group>"; };
 		06B1140619C95F3700EC72E0 /* ClangHelpers.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ClangHelpers.hh; sourceTree = "<group>"; };
 		06B1140719C95F3700EC72E0 /* ClangHelpers.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ClangHelpers.mm; sourceTree = "<group>"; };
+		06B28DD319DEA7F300B99102 /* SuggestMissingMethods.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SuggestMissingMethods.hh; sourceTree = "<group>"; };
+		06B28DD419DEA7F300B99102 /* SuggestMissingMethods.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SuggestMissingMethods.mm; sourceTree = "<group>"; };
 		06FCB3351920B7A80057845B /* XLCXcodeAssist.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XLCXcodeAssist.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		06FCB3381920B7A80057845B /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
 		06FCB33A1920B7A80057845B /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
@@ -144,6 +147,8 @@
 				06B1140719C95F3700EC72E0 /* ClangHelpers.mm */,
 				06B1140319C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.h */,
 				06B1140419C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m */,
+				06B28DD319DEA7F300B99102 /* SuggestMissingMethods.hh */,
+				06B28DD419DEA7F300B99102 /* SuggestMissingMethods.mm */,
 				06FCB3411920B7A80057845B /* Supporting Files */,
 			);
 			path = XLCXcodeAssist;
@@ -222,6 +227,7 @@
 			files = (
 				067EFA5F1920EE0B00C1B75C /* XLCProxy.m in Sources */,
 				06B1140819C95F3700EC72E0 /* ClangHelpers.mm in Sources */,
+				06B28DD519DEA7F300B99102 /* SuggestMissingMethods.mm in Sources */,
 				06FCB3551920B7CC0057845B /* XLCXcodeAssist.mm in Sources */,
 				06B1140519C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m in Sources */,
 			);

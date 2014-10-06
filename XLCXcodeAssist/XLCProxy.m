@@ -22,12 +22,12 @@
 + (void)load
 {
 //    {
-//        Class cls = NSClassFromString(@"IDEIndex");
+//        Class cls = NSClassFromString(@"IDESourceCodeDocument");
 //        id metacls = object_getClass(cls);
 //        IMP imp = class_getMethodImplementation(metacls, @selector(allocWithZone:));
 //        IMP newimp = imp_implementationWithBlock(^id(id me, SEL cmd, NSZone *zone) {
 //            id obj = ((id (*)(id,SEL,NSZone*))(imp))(me, cmd, zone);
-//            return [XLCProxy proxyWithObject:obj];
+//            return obj;//[XLCProxy proxyWithObject:obj];
 //        });
 //        BOOL success = class_addMethod(metacls, @selector(allocWithZone:), newimp, [[NSString stringWithFormat:@"@@:%s", @encode(NSZone*)] UTF8String]);
 //        if (!success) {

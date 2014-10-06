@@ -19,12 +19,13 @@
 #import "ClangHelpers.hh"
 #import "DVTSourceModelItem+XLCAddition.h"
 
+#import "SuggestMissingMethods.hh"
+
 @interface XLCXcodeAssist ()
 
 - (void)installDiagnosticsHelper;
 - (void)installSourceTextViewHelper;
 
-- (void)processMethodDefinitionNotFoundMessage:(IDEDiagnosticActivityLogMessage *)message;
 - (void)processSwitchCaseMessage:(IDEDiagnosticActivityLogMessage *)message withIndex:(IDEIndex *)index queryProvider:(IDEIndexClangQueryProvider *)provider;
 
 - (NSRange)rangeOfBeginningOfLineAtRange:(NSRange)range view:(DVTSourceTextView *)view;
@@ -85,7 +86,7 @@
         try {
             @try {
                 for (IDEDiagnosticActivityLogMessage * message in ret) {
-                    [self processMethodDefinitionNotFoundMessage:message];
+                    XLCSuggestMissingMethods(message);
                     [self processSwitchCaseMessage:message withIndex:idx queryProvider:me];
                 }
             }
@@ -105,129 +106,6 @@
     });
     
     method_setImplementation(method, imp);
-}
-
-- (void)processMethodDefinitionNotFoundMessage:(IDEDiagnosticActivityLogMessage *)message
-{
-
-    static NSRegularExpression *messageRegex;
-    static NSRegularExpression *subMessageRegex;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        messageRegex = [NSRegularExpression regularExpressionWithPattern:@"Method definition for '(.*)' not found" options:0 error:NULL];
-        subMessageRegex = [NSRegularExpression regularExpressionWithPattern:@"Method '.*' declared here" options:0 error:NULL];
-    });
-    
-    NSString *title = message.title;
-    
-    NSTextCheckingResult *result = [messageRegex firstMatchInString:title options:0 range:NSMakeRange(0, title.length)];
-    if (result && [result range].location != NSNotFound) {
-        // found
-        
-        //NSString *selname = [title substringWithRange:[result rangeAtIndex:1]];
-        DVTTextDocumentLocation *bodyLoc = message.location;
-        
-        for (IDEDiagnosticActivityLogMessage *submsg in message.submessages) {
-            NSString *title = submsg.title;
-            if ([subMessageRegex rangeOfFirstMatchInString:title options:0 range:NSMakeRange(0, title.length)].location != NSNotFound) {
-                DVTTextDocumentLocation * declLoc = submsg.location;
-                
-                IDESourceCodeDocument *headerDoc = [[IDEDocumentController sharedDocumentController] documentForURL:declLoc.documentURL];
-                IDESourceCodeDocument *bodyDoc = [[IDEDocumentController sharedDocumentController] documentForURL:bodyLoc.documentURL];
-                
-                if (!headerDoc || !bodyDoc) {
-                    continue;
-                }
-                
-                DVTTextStorage *headerText = headerDoc.textStorage;
-                DVTTextStorage *bodyText = bodyDoc.textStorage;
-                
-                NSRange declRange = [headerText methodDefinitionRangeAtIndex:declLoc.characterRange.location];
-                if (declRange.location == NSNotFound) {
-                    continue;
-                }
-                NSString *declStr = [headerText.string substringWithRange:declRange];
-                
-                __block DVTSourceModel *headerModel;
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    headerModel = headerText.sourceModel;
-                });
-                DVTSourceModelItem *declItem = [headerModel enclosingItemAtLocation:declRange.location];
-                declItem = [declItem xlc_findMethodDeclaratorParent];
-                if (!declItem) {
-                    continue;
-                }
-                
-                NSString *returnType;
-                for (DVTSourceModelItem *item in declItem.children) {
-                    if ([item xlc_isParenExpr]) {
-                        returnType = [[headerText.string substringWithRange:item.range] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-                        break;
-                    }
-                }
-                if (!returnType) {
-                    continue;
-                }
-                
-                NSString *returnStatement;
-                NSString *realReturnType = [returnType stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"()"]];
-                
-                if ([realReturnType isEqualToString:@"void"]) {
-                    returnStatement = @"";
-                } else if ([realReturnType hasSuffix:@"*"] || [realReturnType isEqualToString:@"id"] || [realReturnType isEqualToString:@"instancetype"]) {
-                    returnStatement = @"return <#nil#>;";
-                } else {
-                    returnStatement = [NSString stringWithFormat:@"return <#%@#>;", returnType];
-                }
-                
-                NSString *str = [NSString stringWithFormat:@"%@\n{\n    %@\n}\n\n", declStr, returnStatement];
-                NSRange bodyPosRange = bodyLoc.characterRange;
-                
-                __block DVTSourceModel *bodyModel;
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    bodyModel = bodyText.sourceModel;
-                });
-                
-                
-                DVTSourceModelItem *bodyItem = (^DVTSourceModelItem *{
-                    DVTSourceModelItem *bodyItem = [bodyModel enclosingItemAtLocation:bodyPosRange.location + bodyPosRange.length];
-                    DVTSourceModelItem *bodyItem2 = bodyItem;
-                    while (![bodyItem xlc_isImplementation] && bodyItem) {
-                        bodyItem = bodyItem.parent;
-                    }
-                    if (!bodyItem) {
-                        // try again with siblings
-                        bodyItem = bodyItem2;
-                        while (![bodyItem xlc_isImplementation] && bodyItem) {
-                            for (DVTSourceModelItem *sibling in bodyItem.parent.children) {
-                                if ([sibling xlc_isEndToken]) {
-                                    return sibling;
-                                }
-                            }
-                            bodyItem = bodyItem.parent;
-                        }
-                    }
-                    return [bodyItem.children lastObject];
-                })();
-                if (!bodyItem) {
-                    continue;
-                }
-                
-                NSRange replaceRange = {NSNotFound, 0};
-                
-                replaceRange.location = bodyItem.range.location;
-                
-                DVTTextDocumentLocation *replaceLocation = [[DVTTextDocumentLocation alloc] initWithDocumentURL:bodyLoc.documentURL timestamp:bodyLoc.timestamp characterRange:replaceRange];
-                
-                IDEDiagnosticFixItItem * item = [[IDEDiagnosticFixItItem alloc] initWithFixItString:str replacementLocation:replaceLocation];
-                
-                item.diagnosticItem = message;
-                [message.mutableDiagnosticFixItItems addObject:item];
-                
-                break;
-            }
-        }
-    }
 }
 
 - (void)processSwitchCaseMessage:(IDEDiagnosticActivityLogMessage *)message withIndex:(IDEIndex *)index queryProvider:(IDEIndexClangQueryProvider *)provider
