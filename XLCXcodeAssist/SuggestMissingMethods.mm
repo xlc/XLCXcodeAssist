@@ -151,74 +151,100 @@ static DVTSourceModelItem *SearchAppropriateBodyItem(IDESourceCodeDocument *body
     return beforeNextItem ?: [bodyItem.children lastObject];
 }
 
+IDESourceCodeDocument *XLCGetSourceCodeDocument(DVTTextDocumentLocation *loc) {
+    IDESourceCodeDocument *doc = [[IDEDocumentController sharedDocumentController] documentForURL:loc.documentURL];
+    if (!doc) {
+        NSError *err;
+        doc = [[NSClassFromString(@"IDESourceCodeDocument") alloc] initWithContentsOfURL:loc.documentURL ofType:@"public.c-header" error:&err];
+        if (err) {
+            NSLog(@"Failed to load document at URL: %@ with error: %@", loc.documentURL, err);
+        }
+    }
+    return doc;
+}
+
+static BOOL XLCHandleMethodDefinitionNotFoundMessage(IDEDiagnosticActivityLogMessage *message, IDEDiagnosticActivityLogMessage *submsg)
+{
+    DVTTextDocumentLocation *bodyLoc = message.location;
+    DVTTextDocumentLocation *declLoc = submsg.location;
+    
+    IDESourceCodeDocument *headerDoc = XLCGetSourceCodeDocument(declLoc);
+    IDESourceCodeDocument *bodyDoc = XLCGetSourceCodeDocument(bodyLoc);
+    
+    if (!headerDoc || !bodyDoc) {
+        return NO;
+    }
+    
+    DVTTextStorage *headerText = headerDoc.textStorage;
+    
+    __block NSRange declRange;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        declRange = [headerText methodDefinitionRangeAtIndex:declLoc.characterRange.location];
+    });
+    if (declRange.location == NSNotFound) {
+        return NO;
+    }
+    
+    DVTSourceModelItem *declItem = GetMethodDeclaratorItem(declRange, declLoc, headerText);
+    if (!declItem) {
+        return NO;
+    }
+    
+    NSString *declStr = [headerText.string substringWithRange:declRange];
+    
+    NSString *str = GenerateMethodBody(declRange, headerText, declItem, declStr);
+    if (!str) {
+        return NO;
+    }
+    
+    DVTSourceModelItem *bodyItem = SearchAppropriateBodyItem(bodyDoc, bodyLoc, declItem, headerDoc);
+    if (!bodyItem) {
+        return NO;
+    }
+    
+    NSRange replaceRange = {NSNotFound, 0};
+    
+    replaceRange.location = bodyItem.range.location;
+    
+    DVTTextDocumentLocation *replaceLocation = [[DVTTextDocumentLocation alloc] initWithDocumentURL:bodyLoc.documentURL timestamp:bodyLoc.timestamp characterRange:replaceRange];
+    
+    IDEDiagnosticFixItItem * item = [[IDEDiagnosticFixItItem alloc] initWithFixItString:str replacementLocation:replaceLocation];
+    
+    item.diagnosticItem = message;
+    [message.mutableDiagnosticFixItItems addObject:item];
+    
+    return YES;
+}
+
 void XLCSuggestMissingMethods(IDEDiagnosticActivityLogMessage *message)
 {
     static NSRegularExpression *messageRegex;
+    static NSRegularExpression *protocolMessageRegex;
     static NSRegularExpression *subMessageRegex;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         messageRegex = [NSRegularExpression regularExpressionWithPattern:@"Method definition for '(.*)' not found" options:0 error:NULL];
+        protocolMessageRegex = [NSRegularExpression regularExpressionWithPattern:@"Method '(.*)' in protocol '(.*)' not implemented" options:0 error:NULL];
         subMessageRegex = [NSRegularExpression regularExpressionWithPattern:@"Method '.*' declared here" options:0 error:NULL];
     });
     
     NSString *title = message.title;
     
+    BOOL found = NO;
     NSTextCheckingResult *result = [messageRegex firstMatchInString:title options:0 range:NSMakeRange(0, title.length)];
-    if (result && [result range].location != NSNotFound) {
-        // found
-        
-        //NSString *selname = [title substringWithRange:[result rangeAtIndex:1]];
-        DVTTextDocumentLocation *bodyLoc = message.location;
-        
+    found = result && [result range].location != NSNotFound;
+    if (!found) {
+        result = [protocolMessageRegex firstMatchInString:title options:0 range:NSMakeRange(0, title.length)];
+        found = result && [result range].location != NSNotFound;
+    }
+    if (found) {
         for (IDEDiagnosticActivityLogMessage *submsg in message.submessages) {
             NSString *title = submsg.title;
             if ([subMessageRegex rangeOfFirstMatchInString:title options:0 range:NSMakeRange(0, title.length)].location != NSNotFound) {
-                DVTTextDocumentLocation * declLoc = submsg.location;
-                
-                IDESourceCodeDocument *headerDoc = [[IDEDocumentController sharedDocumentController] documentForURL:declLoc.documentURL];
-                IDESourceCodeDocument *bodyDoc = [[IDEDocumentController sharedDocumentController] documentForURL:bodyLoc.documentURL];
-                
-                if (!headerDoc || !bodyDoc) {
-                    continue;
+                if (XLCHandleMethodDefinitionNotFoundMessage(message, submsg)) {
+                    break;
                 }
-                
-                DVTTextStorage *headerText = headerDoc.textStorage;
-                NSRange declRange = [headerText methodDefinitionRangeAtIndex:declLoc.characterRange.location];
-                if (declRange.location == NSNotFound) {
-                    continue;
-                }
-                
-                DVTSourceModelItem *declItem = GetMethodDeclaratorItem(declRange, declLoc, headerText);
-                if (!declItem) {
-                    continue;
-                }
-                
-                NSString *declStr = [headerText.string substringWithRange:declRange];
-                
-                NSString *str = GenerateMethodBody(declRange, headerText, declItem, declStr);
-                if (!str) {
-                    continue;
-                }
-                
-                DVTSourceModelItem *bodyItem = SearchAppropriateBodyItem(bodyDoc, bodyLoc, declItem, headerDoc);
-                if (!bodyItem) {
-                    continue;
-                }
-                
-                NSRange replaceRange = {NSNotFound, 0};
-                
-                replaceRange.location = bodyItem.range.location;
-                
-                DVTTextDocumentLocation *replaceLocation = [[DVTTextDocumentLocation alloc] initWithDocumentURL:bodyLoc.documentURL timestamp:bodyLoc.timestamp characterRange:replaceRange];
-                
-                IDEDiagnosticFixItItem * item = [[IDEDiagnosticFixItItem alloc] initWithFixItString:str replacementLocation:replaceLocation];
-                
-                item.diagnosticItem = message;
-                [message.mutableDiagnosticFixItItems addObject:item];
-                
-                break;
             }
         }
     }
-
 }

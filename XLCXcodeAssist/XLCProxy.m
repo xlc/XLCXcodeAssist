@@ -22,12 +22,12 @@
 + (void)load
 {
 //    {
-//        Class cls = NSClassFromString(@"IDESourceCodeDocument");
+//        Class cls = NSClassFromString(@"IDEEditorDocument");
 //        id metacls = object_getClass(cls);
 //        IMP imp = class_getMethodImplementation(metacls, @selector(allocWithZone:));
 //        IMP newimp = imp_implementationWithBlock(^id(id me, SEL cmd, NSZone *zone) {
 //            id obj = ((id (*)(id,SEL,NSZone*))(imp))(me, cmd, zone);
-//            return obj;//[XLCProxy proxyWithObject:obj];
+//            return [XLCProxy proxyWithObject:obj];
 //        });
 //        BOOL success = class_addMethod(metacls, @selector(allocWithZone:), newimp, [[NSString stringWithFormat:@"@@:%s", @encode(NSZone*)] UTF8String]);
 //        if (!success) {
@@ -50,14 +50,14 @@
 //    }
     
 //    {
-//        SEL sel = sel_getUid("filePathForFileURL:");
-//        Class cls = NSClassFromString(@"DVTFilePath");
+//        SEL sel = sel_getUid("sharedDocumentController");
+//        Class cls = NSClassFromString(@"IDEDocumentController");
 //        
 //        Method method = class_getClassMethod(cls, sel);
 //        IMP originalImp = method_getImplementation(method);
 //        
-//        IMP imp = imp_implementationWithBlock(^id(id me, id loc) {
-//            id obj = ((id (*)(id,SEL,id))originalImp)(me, sel, loc);
+//        IMP imp = imp_implementationWithBlock(^id(id me, SEL cmd) {
+//            id obj = ((id (*)(id,SEL))originalImp)(me, cmd);
 //            return [XLCProxy proxyWithObject:obj];
 //        });
 //        
@@ -88,16 +88,16 @@
         [invocation setReturnValue:&ret];
     }
     
-    if ([@(selname) rangeOfString:@"symbol"].location != NSNotFound) {
-        NSLog(@"%@", invocation);
-    } else if ([@(selname) rangeOfString:@"Symbol"].location != NSNotFound) {
-        NSLog(@"%@", invocation);
+    NSLog(@"%@ %s", [_obj class], selname);
+    
+    if ([@(selname) rangeOfString:@"addDocument"].location != NSNotFound) {
+        NSLog(@"%@", [invocation debugDescription]);
     }
     
 //    if ([@(selname) rangeOfString:@"symbolsOccurrencesInContext:withCurrentFileContentDictionary"].location != NSNotFound) {
 //        
 //    }
-    NSLog(@"%@ %s", [_obj class], selname);
+    
 //    if ([[invocation methodSignature] methodReturnType][0] == '@') {
 //        NSObject __unsafe_unretained * obj;
 //        [invocation getReturnValue:&obj];
