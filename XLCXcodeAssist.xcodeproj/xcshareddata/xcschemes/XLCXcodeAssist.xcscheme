@@ -38,6 +38,7 @@
       buildConfiguration = "Debug"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
+      viewDebuggingEnabled = "NO"
       allowLocationSimulation = "YES">
       <PathRunnable
          FilePath = "/Applications/Xcode.app">
