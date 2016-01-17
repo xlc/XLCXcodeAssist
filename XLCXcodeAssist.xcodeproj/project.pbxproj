@@ -190,7 +190,7 @@
 		06FCB32B1920B7A80057845B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = "Xiliang Chen";
 			};
 			buildConfigurationList = 06FCB32E1920B7A80057845B /* Build configuration list for PBXProject "XLCXcodeAssist" */;
@@ -264,6 +264,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -336,6 +337,7 @@
 					"$(inherited)",
 					"$(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.github.xlc.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/XLCXcodeAssist/include\"";
 				WRAPPER_EXTENSION = xcplugin;
@@ -361,6 +363,7 @@
 					"$(inherited)",
 					"$(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.github.xlc.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/XLCXcodeAssist/include\"";
 				WRAPPER_EXTENSION = xcplugin;
