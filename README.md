@@ -3,11 +3,15 @@ XLCXcodeAssist
 
 Xcode plug-in to provide some handy features:
 
+- Suggest implementation for missing Swift methods
+
+![method](https://raw.githubusercontent.com/xlc/XLCXcodeAssist/master/images/method-swift.png)
+
 - Suggest implementation for missing Objective-C methods
 
 ![method](https://raw.githubusercontent.com/xlc/XLCXcodeAssist/master/images/method.png)
 
-- Suggest missing switch case statements
+- Suggest missing switch case statements for Objective-C & C & C++
 
 ![switch](https://raw.githubusercontent.com/xlc/XLCXcodeAssist/master/images/switch.png)
 
@@ -16,11 +20,7 @@ Xcode plug-in to provide some handy features:
 
 ## Requirements
 
-Xcode 6
-
-Or
-
-Xcode 5.1.1
+Xcode 5.1.1 or above
 
 ## Install
 
