@@ -11,6 +11,7 @@
 #import "XcodeHeaders.h"
 #import "ClangHelpers.hh"
 #import "DVTSourceModelItem+XLCAddition.h"
+#import "XcodeHelpers.hh"
 
 static DVTSourceModelItem *GetMethodDeclaratorItem(NSRange declRange, DVTTextDocumentLocation *declLoc, DVTTextStorage *headerText)
 {
@@ -151,25 +152,13 @@ static DVTSourceModelItem *SearchAppropriateBodyItem(IDESourceCodeDocument *body
     return beforeNextItem ?: [bodyItem.children lastObject];
 }
 
-IDESourceCodeDocument *XLCGetSourceCodeDocument(DVTTextDocumentLocation *loc) {
-    IDESourceCodeDocument *doc = [[IDEDocumentController sharedDocumentController] documentForURL:loc.documentURL];
-    if (!doc) {
-        NSError *err;
-        doc = [[NSClassFromString(@"IDESourceCodeDocument") alloc] initWithContentsOfURL:loc.documentURL ofType:@"public.c-header" error:&err];
-        if (err) {
-            NSLog(@"Failed to load document at URL: %@ with error: %@", loc.documentURL, err);
-        }
-    }
-    return doc;
-}
-
 static BOOL XLCHandleMethodDefinitionNotFoundMessage(IDEDiagnosticActivityLogMessage *message, IDEDiagnosticActivityLogMessage *submsg)
 {
     DVTTextDocumentLocation *bodyLoc = message.location;
     DVTTextDocumentLocation *declLoc = submsg.location;
     
-    IDESourceCodeDocument *headerDoc = XLCGetSourceCodeDocument(declLoc);
-    IDESourceCodeDocument *bodyDoc = XLCGetSourceCodeDocument(bodyLoc);
+    IDESourceCodeDocument *headerDoc = XLCGetSourceCodeDocument(declLoc, @"public.c-header");
+    IDESourceCodeDocument *bodyDoc = XLCGetSourceCodeDocument(bodyLoc, @"public.c-header");
     
     if (!headerDoc || !bodyDoc) {
         return NO;

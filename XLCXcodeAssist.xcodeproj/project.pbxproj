@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		062564AA193C4BCA00572D45 /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 062564A9193C4BCA00572D45 /* libclang.dylib */; };
+		062D0C531C4B44EB00C101F2 /* SuggestSwiftMissingMethods.mm in Sources */ = {isa = PBXBuildFile; fileRef = 062D0C521C4B44EB00C101F2 /* SuggestSwiftMissingMethods.mm */; };
+		062D0C571C4B470C00C101F2 /* XcodeHelpers.mm in Sources */ = {isa = PBXBuildFile; fileRef = 062D0C561C4B470C00C101F2 /* XcodeHelpers.mm */; };
 		067EFA431920D73200C1B75C /* IDEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA421920D73200C1B75C /* IDEKit.framework */; };
 		067EFA451920D73500C1B75C /* IDEFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA441920D73500C1B75C /* IDEFoundation.framework */; };
 		067EFA471920D73B00C1B75C /* DVTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 067EFA461920D73B00C1B75C /* DVTKit.framework */; };
@@ -29,6 +31,10 @@
 		06256669193C559A00572D45 /* CXString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXString.h; sourceTree = "<group>"; };
 		0625666A193C559A00572D45 /* Index.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Index.h; sourceTree = "<group>"; };
 		0625666B193C559A00572D45 /* Platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Platform.h; sourceTree = "<group>"; };
+		062D0C521C4B44EB00C101F2 /* SuggestSwiftMissingMethods.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SuggestSwiftMissingMethods.mm; sourceTree = "<group>"; };
+		062D0C541C4B450300C101F2 /* SuggestSwiftMissingMethods.hh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SuggestSwiftMissingMethods.hh; sourceTree = "<group>"; };
+		062D0C551C4B470C00C101F2 /* XcodeHelpers.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = XcodeHelpers.hh; sourceTree = "<group>"; };
+		062D0C561C4B470C00C101F2 /* XcodeHelpers.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = XcodeHelpers.mm; sourceTree = "<group>"; };
 		067EFA421920D73200C1B75C /* IDEKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IDEKit.framework; path = ../../../../../Applications/Xcode.app/Contents/Frameworks/IDEKit.framework; sourceTree = "<group>"; };
 		067EFA441920D73500C1B75C /* IDEFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IDEFoundation.framework; path = ../../../../../Applications/Xcode.app/Contents/Frameworks/IDEFoundation.framework; sourceTree = "<group>"; };
 		067EFA461920D73B00C1B75C /* DVTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DVTKit.framework; path = ../../../../../Applications/Xcode.app/Contents/SharedFrameworks/DVTKit.framework; sourceTree = "<group>"; };
@@ -147,8 +153,12 @@
 				06B1140719C95F3700EC72E0 /* ClangHelpers.mm */,
 				06B1140319C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.h */,
 				06B1140419C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m */,
+				062D0C551C4B470C00C101F2 /* XcodeHelpers.hh */,
+				062D0C561C4B470C00C101F2 /* XcodeHelpers.mm */,
 				06B28DD319DEA7F300B99102 /* SuggestMissingMethods.hh */,
 				06B28DD419DEA7F300B99102 /* SuggestMissingMethods.mm */,
+				062D0C541C4B450300C101F2 /* SuggestSwiftMissingMethods.hh */,
+				062D0C521C4B44EB00C101F2 /* SuggestSwiftMissingMethods.mm */,
 				06FCB3411920B7A80057845B /* Supporting Files */,
 			);
 			path = XLCXcodeAssist;
@@ -226,7 +236,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				067EFA5F1920EE0B00C1B75C /* XLCProxy.m in Sources */,
+				062D0C571C4B470C00C101F2 /* XcodeHelpers.mm in Sources */,
 				06B1140819C95F3700EC72E0 /* ClangHelpers.mm in Sources */,
+				062D0C531C4B44EB00C101F2 /* SuggestSwiftMissingMethods.mm in Sources */,
 				06B28DD519DEA7F300B99102 /* SuggestMissingMethods.mm in Sources */,
 				06FCB3551920B7CC0057845B /* XLCXcodeAssist.mm in Sources */,
 				06B1140519C9583300EC72E0 /* DVTSourceModelItem+XLCAddition.m in Sources */,

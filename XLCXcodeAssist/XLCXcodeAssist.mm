@@ -20,10 +20,12 @@
 #import "DVTSourceModelItem+XLCAddition.h"
 
 #import "SuggestMissingMethods.hh"
+#import "SuggestSwiftMissingMethods.hh"
 
 @interface XLCXcodeAssist ()
 
-- (void)installDiagnosticsHelper;
+- (void)installClangDiagnosticsHelper;
+- (void)installSwiftDiagnosticsHelper;
 - (void)installSourceTextViewHelper;
 
 - (void)processSwitchCaseMessage:(IDEDiagnosticActivityLogMessage *)message withIndex:(IDEIndex *)index queryProvider:(IDEIndexClangQueryProvider *)provider;
@@ -37,7 +39,9 @@
 + (void)pluginDidLoad:(NSBundle *)plugin
 {
     if ([self shouldLoadPlugin]) {
-        [self sharedPlugin];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self sharedPlugin];
+        });
     }
 }
 
@@ -63,7 +67,8 @@
 {
     self = [super init];
     if (self) {
-        [self installDiagnosticsHelper];
+        [self installClangDiagnosticsHelper];
+        [self installSwiftDiagnosticsHelper];
         [self installSourceTextViewHelper];
     }
     
@@ -72,7 +77,7 @@
 
 #pragma mark -
 
-- (void)installDiagnosticsHelper
+- (void)installClangDiagnosticsHelper
 {
     SEL sel = sel_getUid("codeDiagnosticsAtLocation:withCurrentFileContentDictionary:forIndex:");
     Class IDEIndexClangQueryProviderClass = NSClassFromString(@"IDEIndexClangQueryProvider");
@@ -106,6 +111,45 @@
     });
     
     method_setImplementation(method, imp);
+}
+
+- (void)installSwiftDiagnosticsHelper
+{
+    Class cls = NSClassFromString(@"IDESourceLanguageServiceSwift");
+    if (!cls) {
+        NSLog(@"%s:%d - Can't find class IDESourceLanguageServiceSwift", __PRETTY_FUNCTION__, __LINE__);
+        return;
+    }
+    SEL sel = sel_getUid("setDiagnosticItems:");
+    
+    Method method = class_getInstanceMethod(cls, sel);
+    IMP originalImp = method_getImplementation(method);
+    
+    IMP imp = imp_implementationWithBlock(^void(id me, IDESourceLanguageServiceSwiftDiagnosticItems *items) {
+        ((void (*)(id,SEL,id))originalImp)(me, sel, items);
+        
+        try {
+            @try {
+                for (IDEDiagnosticActivityLogMessage * message in items.diagnosticItems) {
+                    XLCSuggestSwiftMissingMethods(message);
+                }
+            }
+            @catch (id exception) {
+                // something wrong... but I don't want to crash Xcode
+                NSLog(@"%s:%d - %@", __PRETTY_FUNCTION__, __LINE__, exception);
+            }
+        }
+        catch(std::exception &e) {
+            NSLog(@"%s:%d - %s", __PRETTY_FUNCTION__, __LINE__, e.what());
+        }
+        catch (...) {
+            NSLog(@"%s:%d - unknown exception", __PRETTY_FUNCTION__, __LINE__);
+        }
+    });
+    
+    method_setImplementation(method, imp);
+    
+    NSLog(@"class %@, imp %p %p", cls, originalImp, imp);
 }
 
 - (void)processSwitchCaseMessage:(IDEDiagnosticActivityLogMessage *)message withIndex:(IDEIndex *)index queryProvider:(IDEIndexClangQueryProvider *)provider

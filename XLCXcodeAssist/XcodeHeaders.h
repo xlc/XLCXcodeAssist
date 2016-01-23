@@ -74,12 +74,31 @@
 
 @end
 
+@interface DVTSourceLandmarkItem : NSObject
+
+@property DVTSourceLandmarkItem * parent;
+@property(readonly) NSArray * children;
+@property(copy) NSString * name;
+@property(readonly) int type;
+@property(copy,readonly) NSString * typeName;
+@property NSRange range;
+@property NSRange nameRange;
+
+@end
+
 @interface DVTTextStorage : NSTextStorage
 
 @property(readonly) DVTSourceModel * sourceModel;
 @property unsigned long long indentWidth;
+@property(readonly) DVTSourceLandmarkItem * topSourceLandmark;
 
 - (NSRange)methodDefinitionRangeAtIndex:(unsigned long long)arg1;
+- (NSRange)functionOrMethodBodyRangeAtIndex:(unsigned long long)arg1;
+- (NSRange)characterRangeForLineRange:(NSRange)arg1;
+- (NSRange)characterRangeFromDocumentLocation:(id)arg1;
+- (id)sourceLandmarkAtCharacterIndex:(unsigned long long)arg1;
+- (long long)getIndentForLine:(long long)arg1;
+- (NSRange)lineRangeForCharacterRange:(NSRange)arg1;
 
 @end
 
@@ -176,5 +195,12 @@
 @end
 
 @interface DVTSourceTextView : DVTCompletingTextView
+
+@end
+
+
+@interface IDESourceLanguageServiceSwiftDiagnosticItems : NSObject
+
+@property(copy,readonly) NSArray<IDEDiagnosticActivityLogMessage *> * diagnosticItems;
 
 @end
