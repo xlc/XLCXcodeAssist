@@ -170,7 +170,7 @@
 @public
     DVTDispatchLock *_clangLock;
     void *_cxIndex;
-    struct CXTranslationUnitImpl { } *_cxTU;
+//    struct CXTranslationUnitImpl { } *_cxTU;
     long long _filePurgeCount;
     NSArray *_astArgs;
     NSString *_workingDirectory;

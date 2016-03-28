@@ -198,7 +198,14 @@
         NSMutableArray *valuesArr = [NSMutableArray array];
         
         [provider performClang:^{
-            CXTranslationUnit tu = provider->_cxTU;
+            // use runtime method to access ivar becuase _cxTU type changed from non-atomic to atomic in Xcode 7.3
+            // but we want to compile this code in all Xcode versions
+//            CXTranslationUnit tu = provider->_cxTU;
+            Ivar cxTUvar = class_getInstanceVariable([provider class], "_cxTU");
+            ptrdiff_t offset = ivar_getOffset(cxTUvar);
+            void *ptr = (((char *)(__bridge void *)provider) + offset);
+            CXTranslationUnit tu = *(CXTranslationUnit *)ptr;
+            
             CXFile file = clang_getFile(tu, [[loc.documentURL path] UTF8String]);
             CXSourceLocation sloc = clang_getLocationForOffset(tu, file, (unsigned int)loc.characterRange.location);
             CXCursor currentCursor = clang_getCursor(tu, sloc);
